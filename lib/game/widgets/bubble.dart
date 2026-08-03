@@ -59,6 +59,7 @@ class _PopBubbleState extends State<PopBubble>
   Widget build(BuildContext context) {
     final popped = widget.state == BubbleVisualState.popped;
     final miss = widget.state == BubbleVisualState.miss;
+    final cued = widget.state == BubbleVisualState.cued;
 
     return GestureDetector(
       onTap: () {
@@ -69,7 +70,7 @@ class _PopBubbleState extends State<PopBubble>
         animation: _pulse,
         builder: (context, child) {
           final cueScale = widget.state == BubbleVisualState.cued
-              ? 1.0 + (_pulse.value * 0.08)
+              ? 1.0 + (_pulse.value * 0.16)
               : 1.0;
           final popScale = popped ? 0.88 : 1.0;
           return Transform.scale(
@@ -84,6 +85,9 @@ class _PopBubbleState extends State<PopBubble>
             color: miss
                 ? GameColors.miss.withValues(alpha: 0.85)
                 : widget.color,
+            border: cued
+                ? Border.all(color: Colors.white, width: 5)
+                : null,
             boxShadow: [
               if (!popped)
                 BoxShadow(
@@ -91,12 +95,18 @@ class _PopBubbleState extends State<PopBubble>
                   offset: const Offset(0, 6),
                   blurRadius: 8,
                 ),
-              if (widget.state == BubbleVisualState.cued)
+              if (cued) ...[
                 BoxShadow(
-                  color: GameColors.perfect.withValues(alpha: 0.85),
-                  blurRadius: 16,
-                  spreadRadius: 2,
+                  color: GameColors.perfect,
+                  blurRadius: 10,
+                  spreadRadius: 5,
                 ),
+                BoxShadow(
+                  color: GameColors.perfect.withValues(alpha: 0.55),
+                  blurRadius: 30,
+                  spreadRadius: 12,
+                ),
+              ],
             ],
             gradient: popped
                 ? null

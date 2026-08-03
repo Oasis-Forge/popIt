@@ -51,7 +51,7 @@ class HitResult {
 class RhythmTiming {
   static const perfectWindowMs = 45;
   static const goodWindowMs = 120;
-  static const cueLeadMs = 350;
+  static const cueLeadMs = 550;
   static const perfectScore = 100;
   static const goodScore = 50;
 }

@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../audio/audio_controller.dart';
@@ -12,6 +11,7 @@ import '../game/rhythm_controller.dart';
 import '../game/widgets/bubble.dart';
 import '../game/widgets/hud.dart';
 import '../game/widgets/pop_it_board.dart';
+import '../game/widgets/vault_decor.dart';
 import '../theme/game_theme.dart';
 
 class GameScreen extends StatefulWidget {
@@ -83,78 +83,135 @@ class _GameScreenState extends State<GameScreen> {
     });
   }
 
+  static String _grade(double acc) {
+    if (acc >= 0.98) return 'FLAWLESS';
+    if (acc >= 0.9) return 'BRILLIANT';
+    if (acc >= 0.75) return 'POLISHED';
+    if (acc >= 0.5) return 'ROUGH CUT';
+    return 'UNCUT';
+  }
+
+  static String _clock(int ms, int durationMs) {
+    final secs = (ms.clamp(0, durationMs)) ~/ 1000;
+    return '${secs ~/ 60}:${(secs % 60).toString().padLeft(2, '0')}';
+  }
+
   Future<void> _showResults() async {
     final rhythm = _rhythm!;
     await showModalBottomSheet<void>(
       context: context,
       isDismissible: false,
       enableDrag: false,
-      backgroundColor: GameColors.cream,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Nice pops!',
-                style: GoogleFonts.fredoka(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w700,
-                  color: GameColors.candyPink,
-                ),
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+            border: const Border(
+              top: BorderSide(color: VaultColors.gold, width: 2),
+            ),
+            gradient: const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFF2A0C36), VaultColors.plateDeep],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.75),
+                blurRadius: 60,
+                offset: const Offset(0, -22),
               ),
-              const SizedBox(height: 16),
-              _ResultRow(label: 'Score', value: '${rhythm.score}'),
-              _ResultRow(label: 'Max combo', value: '${rhythm.maxCombo}'),
-              _ResultRow(
-                label: 'Accuracy',
-                value: '${(rhythm.accuracy * 100).round()}%',
-              ),
-              _ResultRow(
-                label: 'Perfect / Good / Miss',
-                value:
-                    '${rhythm.perfectCount} / ${rhythm.goodCount} / ${rhythm.missCount}',
-              ),
-              const SizedBox(height: 24),
-              Row(
+            ],
+          ),
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(26, 30, 26, 30),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        Navigator.of(this.context).pop();
-                      },
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: GameColors.ink,
-                        side: const BorderSide(color: GameColors.ink),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                      ),
-                      child: Text(
-                        'Home',
-                        style: GoogleFonts.fredoka(fontWeight: FontWeight.w600),
-                      ),
+                  Text(
+                    "THAT'S A SET",
+                    style: vaultLabel(
+                      size: 10,
+                      color: VaultColors.gold,
+                      tracking: 0.4,
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        _replay();
-                      },
-                      child: const Text('Replay'),
+                  const SizedBox(height: 10),
+                  GradientText(
+                    '${rhythm.score}',
+                    gradient: VaultColors.scoreGradient,
+                    style: vaultDisplay(size: 60),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    _grade(rhythm.accuracy),
+                    style: vaultLabel(
+                      size: 13,
+                      color: VaultColors.paper.withValues(alpha: 0.6),
+                      tracking: 0.26,
                     ),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _ResultTile(
+                          label: 'ACC',
+                          value: '${(rhythm.accuracy * 100).round()}%',
+                          color: VaultColors.lime,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _ResultTile(
+                          label: 'COMBO',
+                          value: '${rhythm.maxCombo}',
+                          color: VaultColors.gold,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _ResultTile(
+                          label: 'P/G/M',
+                          value:
+                              '${rhythm.perfectCount}/${rhythm.goodCount}/${rhythm.missCount}',
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 22),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            Navigator.of(this.context).pop();
+                          },
+                          child: const Text('HOME'),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        flex: 2,
+                        child: VaultCta(
+                          label: 'AGAIN',
+                          fontSize: 13,
+                          verticalPadding: 17,
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            _replay();
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
         );
       },
@@ -214,7 +271,9 @@ class _GameScreenState extends State<GameScreen> {
   Widget build(BuildContext context) {
     if (_loading) {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+        body: Center(
+          child: CircularProgressIndicator(color: VaultColors.gold),
+        ),
       );
     }
     if (_error != null || _rhythm == null) {
@@ -233,99 +292,178 @@ class _GameScreenState extends State<GameScreen> {
 
     return Scaffold(
       body: DecoratedBox(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFFFFF6F0), Color(0xFFFFE4EC)],
-          ),
-        ),
-        child: SafeArea(
-          child: ListenableBuilder(
-            listenable: _rhythm!,
-            builder: (context, _) {
-              final rhythm = _rhythm!;
-              return Padding(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        IconButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          icon: const Icon(Icons.close_rounded),
-                          color: GameColors.ink,
+        decoration: const BoxDecoration(gradient: VaultColors.roomGradient),
+        child: Stack(
+          children: [
+            const Positioned(
+              top: -140,
+              left: 0,
+              right: 0,
+              child: Center(child: SpectrumBloom(opacity: 0.32)),
+            ),
+            SafeArea(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 460),
+                  child: ListenableBuilder(
+                    listenable: _rhythm!,
+                    builder: (context, _) {
+                      final rhythm = _rhythm!;
+                      final progress = (rhythm.positionMs /
+                              rhythm.chart.durationMs)
+                          .clamp(0.0, 1.0);
+                      final fresh = rhythm.lastJudgement != null;
+
+                      return Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 24, 20, 30),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
+                              children: [
+                                GestureDetector(
+                                  onTap: () => Navigator.of(context).pop(),
+                                  child: Text(
+                                    'CLOSE',
+                                    style: vaultLabel(
+                                      size: 10,
+                                      color: VaultColors.paper
+                                          .withValues(alpha: 0.45),
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  rhythm.chart.title.toUpperCase(),
+                                  style: vaultLabel(
+                                    size: 10,
+                                    color: VaultColors.gold,
+                                  ),
+                                ),
+                                Text(
+                                  _clock(
+                                    rhythm.positionMs,
+                                    rhythm.chart.durationMs,
+                                  ),
+                                  style: vaultLabel(
+                                    size: 10,
+                                    color: VaultColors.paper
+                                        .withValues(alpha: 0.45),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(99),
+                              child: SizedBox(
+                                height: 6,
+                                child: Stack(
+                                  children: [
+                                    ColoredBox(
+                                      color: VaultColors.paper
+                                          .withValues(alpha: 0.12),
+                                      child: const SizedBox.expand(),
+                                    ),
+                                    FractionallySizedBox(
+                                      widthFactor: progress,
+                                      child: const DecoratedBox(
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            colors: [
+                                              VaultColors.cyan,
+                                              VaultColors.magenta,
+                                              VaultColors.gold,
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            GameHud(
+                              score: rhythm.score,
+                              combo: rhythm.combo,
+                              accuracy: rhythm.accuracy,
+                            ),
+                            const SizedBox(height: 14),
+                            TimingBar(
+                              deltaMs: rhythm.lastDeltaMs,
+                              visible: fresh &&
+                                  rhythm.lastJudgement != Judgement.miss,
+                            ),
+                            const SizedBox(height: 6),
+                            JudgementLine(
+                              judgement: rhythm.lastJudgement,
+                              deltaMs: rhythm.lastDeltaMs,
+                              judgementToken: rhythm.judgementToken,
+                            ),
+                            Expanded(
+                              child: Center(
+                                child: ConstrainedBox(
+                                  constraints:
+                                      const BoxConstraints(maxWidth: 420),
+                                  child: PopItBoard(
+                                    rows: rows,
+                                    cols: cols,
+                                    stateForBubble: _stateFor,
+                                    onBubbleTap: _onBubbleTap,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        const Spacer(),
-                        Text(
-                          rhythm.chart.title,
-                          style: GoogleFonts.fredoka(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: GameColors.ink.withValues(alpha: 0.55),
-                          ),
-                        ),
-                        const Spacer(),
-                        const SizedBox(width: 48),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    GameHud(
-                      score: rhythm.score,
-                      combo: rhythm.combo,
-                      judgement: rhythm.lastJudgement,
-                      judgementToken: rhythm.judgementToken,
-                    ),
-                    const SizedBox(height: 20),
-                    Expanded(
-                      child: Center(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 420),
-                          child: PopItBoard(
-                            rows: rows,
-                            cols: cols,
-                            stateForBubble: _stateFor,
-                            onBubbleTap: _onBubbleTap,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                      );
+                    },
+                  ),
                 ),
-              );
-            },
-          ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-class _ResultRow extends StatelessWidget {
-  const _ResultRow({required this.label, required this.value});
+class _ResultTile extends StatelessWidget {
+  const _ResultTile({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
 
   final String label;
   final String value;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        color: VaultColors.paper.withValues(alpha: 0.07),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
-            style: GoogleFonts.fredoka(
-              color: GameColors.ink.withValues(alpha: 0.6),
+            style: vaultLabel(
+              size: 8.5,
+              color: VaultColors.paper.withValues(alpha: 0.45),
+              tracking: 0.24,
             ),
           ),
-          const Spacer(),
           Text(
             value,
-            style: GoogleFonts.fredoka(
-              fontWeight: FontWeight.w700,
-              fontSize: 18,
-            ),
+            maxLines: 1,
+            style: vaultDisplay(size: 23, color: color),
           ),
         ],
       ),

@@ -1,77 +1,136 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
+import '../game/widgets/vault_decor.dart';
 import '../theme/game_theme.dart';
 import 'game_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _bob = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1800),
+  )..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _bob.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: DecoratedBox(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFFFF1F5),
-              GameColors.cream,
-              Color(0xFFFFE0EA),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 28),
-            child: Column(
-              children: [
-                const Spacer(flex: 2),
-                Text(
-                  'Pop It',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.fredoka(
-                    fontSize: 72,
-                    fontWeight: FontWeight.w700,
-                    height: 0.95,
-                    color: GameColors.candyPink,
-                    shadows: const [
-                      Shadow(
-                        color: Color(0x66E85A7C),
-                        offset: Offset(0, 8),
-                        blurRadius: 0,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Tap the glowing bubbles on the beat.',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.fredoka(
-                    fontSize: 18,
-                    color: GameColors.ink.withValues(alpha: 0.7),
-                  ),
-                ),
-                const Spacer(flex: 2),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => const GameScreen(),
-                        ),
-                      );
-                    },
-                    child: const Text('Play'),
-                  ),
-                ),
-                const Spacer(flex: 1),
-              ],
+        decoration: const BoxDecoration(gradient: VaultColors.roomGradient),
+        child: Stack(
+          children: [
+            const Positioned(
+              top: -140,
+              left: 0,
+              right: 0,
+              child: Center(child: SpectrumBloom()),
             ),
-          ),
+            SafeArea(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 460),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(28, 36, 28, 0),
+                    child: Column(
+                      children: [
+                        const Spacer(flex: 2),
+                        Text(
+                          'THE DISCO VAULT',
+                          textAlign: TextAlign.center,
+                          style: vaultLabel(
+                            size: 10,
+                            color: VaultColors.gold,
+                            tracking: 0.46,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        AnimatedBuilder(
+                          animation: _bob,
+                          builder: (context, child) => Transform.translate(
+                            offset: Offset(
+                              0,
+                              -9 * Curves.easeInOut.transform(_bob.value),
+                            ),
+                            child: child,
+                          ),
+                          child: GradientText(
+                            'POP\nIT',
+                            gradient: VaultColors.wordmarkGradient,
+                            style: vaultDisplay(
+                              size: 76,
+                              height: 0.86,
+                              letterSpacing: -2.3,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          '20 stones. 128 beats. Zero excuses.',
+                          textAlign: TextAlign.center,
+                          style: vaultLabel(
+                            size: 13,
+                            color: VaultColors.paper.withValues(alpha: 0.6),
+                            weight: FontWeight.w400,
+                            tracking: 0.1,
+                          ).copyWith(height: 1.7),
+                        ),
+                        const Spacer(flex: 2),
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 18),
+                          padding: const EdgeInsets.symmetric(vertical: 9),
+                          decoration: BoxDecoration(
+                            border: Border(
+                              top: BorderSide(
+                                color:
+                                    VaultColors.paper.withValues(alpha: 0.14),
+                              ),
+                              bottom: BorderSide(
+                                color:
+                                    VaultColors.paper.withValues(alpha: 0.14),
+                              ),
+                            ),
+                          ),
+                          child: VaultMarquee(
+                            text: 'DEMO BEAT  \u2726  120 BPM  \u2726  0:32  \u2726  ',
+                            style: vaultLabel(
+                              size: 10,
+                              color:
+                                  VaultColors.paper.withValues(alpha: 0.45),
+                              tracking: 0.34,
+                            ),
+                          ),
+                        ),
+                        VaultCta(
+                          label: 'PLAY',
+                          shimmer: true,
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (_) => const GameScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 34),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

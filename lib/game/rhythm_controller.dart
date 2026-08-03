@@ -21,6 +21,7 @@ class RhythmController extends ChangeNotifier {
   int _goodCount = 0;
   int _missCount = 0;
   int _positionMs = 0;
+  int _lastDeltaMs = 0;
   bool _finished = false;
   Judgement? _lastJudgement;
   int _judgementToken = 0;
@@ -33,6 +34,7 @@ class RhythmController extends ChangeNotifier {
   int get goodCount => _goodCount;
   int get missCount => _missCount;
   int get positionMs => _positionMs;
+  int get lastDeltaMs => _lastDeltaMs;
   bool get finished => _finished;
   Judgement? get lastJudgement => _lastJudgement;
   int get judgementToken => _judgementToken;
@@ -95,6 +97,7 @@ class RhythmController extends ChangeNotifier {
     final points = _applyHit(judgement);
     _poppedBubbleIds.add(bubbleId);
     _missFlashBubbleIds.remove(bubbleId);
+    _lastDeltaMs = delta;
     _setJudgement(judgement);
     _refreshCues();
     notifyListeners();
@@ -126,6 +129,7 @@ class RhythmController extends ChangeNotifier {
     _goodCount = 0;
     _missCount = 0;
     _positionMs = 0;
+    _lastDeltaMs = 0;
     _finished = false;
     _lastJudgement = null;
     _judgementToken = 0;
@@ -183,6 +187,7 @@ class RhythmController extends ChangeNotifier {
   void _registerMiss({required int bubbleId, required bool fromTap}) {
     _combo = 0;
     _missCount += 1;
+    _lastDeltaMs = 0;
     _missFlashBubbleIds.add(bubbleId);
     _setJudgement(Judgement.miss);
     if (!fromTap) {

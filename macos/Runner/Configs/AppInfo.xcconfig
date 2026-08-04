@@ -8,7 +8,7 @@
 PRODUCT_NAME = pop_it
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.popit.popIt
+PRODUCT_BUNDLE_IDENTIFIER = com.popit.popit
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2026 com.popit. All rights reserved.

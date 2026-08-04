@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../theme/game_theme.dart';
+import '../../theme/vault_palette.dart';
 
 enum BubbleVisualState { idle, cued, popped, miss }
 
@@ -35,10 +36,16 @@ class PopBubble extends StatefulWidget {
 
 class _PopBubbleState extends State<PopBubble>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _pulse = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 425),
-  );
+  late final AnimationController _pulse;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulse = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 425),
+    );
+  }
 
   @override
   void didUpdateWidget(covariant PopBubble oldWidget) {
@@ -65,6 +72,7 @@ class _PopBubbleState extends State<PopBubble>
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.vault;
     final cued = widget.state == BubbleVisualState.cued;
     final popped = widget.state == BubbleVisualState.popped;
     final miss = widget.state == BubbleVisualState.miss;
@@ -118,8 +126,8 @@ class _PopBubbleState extends State<PopBubble>
                       shape: BoxShape.circle,
                       gradient: RadialGradient(
                         colors: [
-                          VaultColors.gold.withValues(alpha: 0.85),
-                          VaultColors.magenta.withValues(alpha: 0.45),
+                          palette.gold.withValues(alpha: 0.85),
+                          palette.magenta.withValues(alpha: 0.45),
                           Colors.transparent,
                         ],
                         stops: const [0.0, 0.46, 0.72],
@@ -198,20 +206,20 @@ class _PopBubbleState extends State<PopBubble>
                         AnimatedOpacity(
                           opacity: facetOpacity,
                           duration: const Duration(milliseconds: 120),
-                          child: const DecoratedBox(
+                          child: DecoratedBox(
                             decoration: BoxDecoration(
                               gradient: SweepGradient(
                                 colors: [
-                                  Color(0xD9FFFFFF),
-                                  Color(0x00FFFFFF),
-                                  Color(0x8CFF2D95),
-                                  Color(0x00FFFFFF),
-                                  Color(0x997BE3FF),
-                                  Color(0x00FFFFFF),
-                                  Color(0x99FFD93D),
-                                  Color(0x00FFFFFF),
+                                  const Color(0xD9FFFFFF),
+                                  const Color(0x00FFFFFF),
+                                  palette.magenta.withValues(alpha: 0.55),
+                                  const Color(0x00FFFFFF),
+                                  palette.cyan.withValues(alpha: 0.6),
+                                  const Color(0x00FFFFFF),
+                                  palette.gold.withValues(alpha: 0.6),
+                                  const Color(0x00FFFFFF),
                                 ],
-                                stops: [
+                                stops: const [
                                   0.0,
                                   0.09,
                                   0.2,
@@ -249,7 +257,7 @@ class _PopBubbleState extends State<PopBubble>
                           duration: const Duration(milliseconds: 120),
                           color: Color.lerp(
                             widget.tints[1],
-                            VaultColors.dimVeil,
+                            palette.dimVeil,
                             0.7,
                           )!.withValues(alpha: veil),
                         ),
@@ -276,10 +284,10 @@ class _PopBubbleState extends State<PopBubble>
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(color: VaultColors.gold, width: 3),
+                      border: Border.all(color: palette.gold, width: 3),
                       boxShadow: [
                         BoxShadow(
-                          color: VaultColors.gold.withValues(alpha: 0.75),
+                          color: palette.gold.withValues(alpha: 0.75),
                           blurRadius: 20,
                           spreadRadius: 5,
                         ),

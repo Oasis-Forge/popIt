@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../app/app_scope.dart';
 import '../audio/audio_controller.dart';
 import '../game/road_to_glory_controller.dart';
 import '../game/widgets/bubble.dart';
@@ -34,6 +35,11 @@ class _RoadToGloryScreenState extends State<RoadToGloryScreen> {
         popSfxAsset: 'assets/audio/pop.wav',
         loseSfxAsset: 'assets/audio/lose.wav',
       );
+      if (!mounted) return;
+      final settings = AppScope.maybeOf(context)?.settings;
+      if (settings != null) {
+        await _audio.setSfxVolume(settings.sfxVolume);
+      }
       _game.start();
       _game.addListener(_onGameChanged);
       if (!mounted) return;
@@ -146,11 +152,13 @@ class _RoadToGloryScreenState extends State<RoadToGloryScreen> {
   void _onBubbleTap(int bubbleId) {
     if (_game.phase != RoadPhase.playing) return;
     final ok = _game.onBubbleTapped(bubbleId);
+    final haptics =
+        AppScope.maybeOf(context)?.settings.hapticsEnabled ?? true;
     if (ok) {
-      HapticFeedback.lightImpact();
+      if (haptics) HapticFeedback.lightImpact();
       _audio.playPop();
     } else {
-      HapticFeedback.heavyImpact();
+      if (haptics) HapticFeedback.heavyImpact();
     }
   }
 

@@ -1,4 +1,4 @@
-package com.popit.pop_it
+package com.popit.popit
 
 import io.flutter.embedding.android.FlutterActivity
 

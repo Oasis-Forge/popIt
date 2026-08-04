@@ -1,41 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-/// Disco Vault — the luxury visual system for Pop It.
-///
-/// Mirror-tile stones set in gold bezels on an aubergine plate, lit by a
-/// slow-turning spectrum. Type is Archivo Black for numerals and the
-/// wordmark, Space Grotesk for labels.
+import 'vault_palette.dart';
+
+/// Disco Vault defaults. Prefer [BuildContext.vault] for themed screens.
 class VaultColors {
-  // Room
   static const bgTop = Color(0xFF3A1148);
   static const bgMid = Color(0xFF1A0722);
   static const bgDeep = Color(0xFF0A0310);
-
-  // Plate
   static const plateTop = Color(0xFF2C0E38);
   static const plateMid = Color(0xFF160620);
   static const plateDeep = Color(0xFF0C0312);
-
-  // Accents
   static const gold = Color(0xFFFFD93D);
   static const magenta = Color(0xFFFF2D95);
   static const violet = Color(0xFFA855F7);
   static const cyan = Color(0xFF7BE3FF);
   static const lime = Color(0xFF8CFF6B);
   static const missRed = Color(0xFFFF3C5A);
-
   static const ink = Color(0xFF160620);
   static const paper = Color(0xFFF6ECFF);
   static const dimVeil = Color(0xFF10041A);
-
-  /// Bezel metal, light to dark.
   static const bezel = [Color(0xFFFFF6C9), Color(0xFFE0A83D), Color(0xFF6B4A0F)];
-
-  /// The turning spectrum used for blooms, rings and progress.
   static const spectrum = [cyan, magenta, gold, lime, violet, cyan];
-
-  /// One tint triplet per board column: highlight, body, shadow.
   static const stones = <List<Color>>[
     [Color(0xFFFFFFFF), Color(0xFFC9F0FF), Color(0xFF3E86B8)],
     [Color(0xFFFFFFFF), Color(0xFFFFD9F2), Color(0xFFB4468C)],
@@ -61,13 +46,7 @@ class VaultColors {
   static const wordmarkGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: [
-      Color(0xFFFFFFFF),
-      Color(0xFFE6C9FF),
-      violet,
-      magenta,
-      gold,
-    ],
+    colors: [Color(0xFFFFFFFF), paper, violet, magenta, gold],
     stops: [0.06, 0.34, 0.52, 0.74, 1.0],
   );
 
@@ -86,68 +65,76 @@ class VaultColors {
   );
 }
 
-/// Display numerals + wordmark.
 TextStyle vaultDisplay({
   required double size,
   Color color = VaultColors.paper,
   double letterSpacing = 0,
   double height = 1,
 }) =>
-    GoogleFonts.archivoBlack(
+    TextStyle(
+      fontFamily: 'ArchivoBlack',
       fontSize: size,
       color: color,
       letterSpacing: letterSpacing,
       height: height,
     );
 
-/// Labels, meta, tracked small caps.
 TextStyle vaultLabel({
   required double size,
   Color color = VaultColors.paper,
   FontWeight weight = FontWeight.w500,
   double tracking = 0.28,
 }) =>
-    GoogleFonts.spaceGrotesk(
+    TextStyle(
+      fontFamily: 'SpaceGrotesk',
       fontSize: size,
       color: color,
       fontWeight: weight,
       letterSpacing: size * tracking,
     );
 
-ThemeData buildPopItTheme() {
+ThemeData buildPopItTheme({VaultPalette palette = VaultPalette.discoVault}) {
   final base = ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
-    scaffoldBackgroundColor: VaultColors.bgDeep,
+    scaffoldBackgroundColor: palette.bgDeep,
+    fontFamily: 'SpaceGrotesk',
     colorScheme: ColorScheme.fromSeed(
-      seedColor: VaultColors.violet,
+      seedColor: palette.violet,
       brightness: Brightness.dark,
-      surface: VaultColors.bgDeep,
+      surface: palette.bgDeep,
     ),
   );
 
   return base.copyWith(
-    textTheme: GoogleFonts.spaceGroteskTextTheme(base.textTheme).apply(
-      bodyColor: VaultColors.paper,
-      displayColor: VaultColors.paper,
+    extensions: <ThemeExtension<dynamic>>[palette],
+    textTheme: base.textTheme.apply(
+      bodyColor: palette.paper,
+      displayColor: palette.paper,
+      fontFamily: 'SpaceGrotesk',
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: VaultColors.gold,
-        foregroundColor: VaultColors.ink,
+        backgroundColor: palette.gold,
+        foregroundColor: palette.ink,
         elevation: 0,
         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
         shape: const StadiumBorder(),
-        textStyle: GoogleFonts.archivoBlack(fontSize: 15, letterSpacing: 3.6),
+        textStyle: const TextStyle(
+          fontFamily: 'ArchivoBlack',
+          fontSize: 15,
+          letterSpacing: 3.6,
+        ),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        foregroundColor: VaultColors.paper.withValues(alpha: 0.75),
-        side: BorderSide(color: VaultColors.paper.withValues(alpha: 0.3)),
+        foregroundColor: palette.paper.withValues(alpha: 0.75),
+        side: BorderSide(color: palette.paper.withValues(alpha: 0.3)),
         padding: const EdgeInsets.symmetric(vertical: 17),
         shape: const StadiumBorder(),
-        textStyle: GoogleFonts.spaceGrotesk(
+        textStyle: const TextStyle(
+          fontFamily: 'SpaceGrotesk',
           fontSize: 11,
           fontWeight: FontWeight.w500,
           letterSpacing: 3.1,

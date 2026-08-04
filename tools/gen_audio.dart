@@ -5,8 +5,9 @@ import 'dart:typed_data';
 void main() {
   Directory('assets/audio').createSync(recursive: true);
   File('assets/audio/pop.wav').writeAsBytesSync(makePop());
+  File('assets/audio/lose.wav').writeAsBytesSync(makeLose());
   File('assets/audio/demo_beat.wav').writeAsBytesSync(makeBeat());
-  stdout.writeln('Wrote pop.wav and demo_beat.wav');
+  stdout.writeln('Wrote pop.wav, lose.wav, and demo_beat.wav');
 }
 
 Uint8List makePop() {
@@ -18,6 +19,21 @@ Uint8List makePop() {
     final t = i / sampleRate;
     final env = exp(-38 * t);
     final tone = sin(2 * pi * 520 * t) * 0.55 + sin(2 * pi * 180 * t) * 0.35;
+    samples[i] = tone * env;
+  }
+  return encodeWav(samples, sampleRate);
+}
+
+Uint8List makeLose() {
+  const sampleRate = 22050;
+  const durationSec = 0.35;
+  final n = (sampleRate * durationSec).round();
+  final samples = Float64List(n);
+  for (var i = 0; i < n; i++) {
+    final t = i / sampleRate;
+    final env = exp(-6 * t);
+    final freq = 320 - 180 * (t / durationSec);
+    final tone = sin(2 * pi * freq * t) * 0.7 + sin(2 * pi * freq * 0.5 * t) * 0.3;
     samples[i] = tone * env;
   }
   return encodeWav(samples, sampleRate);

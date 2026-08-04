@@ -238,22 +238,16 @@ class _GameScreenState extends State<GameScreen> {
       _audio.playPop();
     } else {
       HapticFeedback.heavyImpact();
-      Future<void>.delayed(const Duration(milliseconds: 180), () {
-        rhythm.clearTransientFlash(bubbleId);
-      });
     }
   }
 
   BubbleVisualState _stateFor(int bubbleId) {
     final rhythm = _rhythm!;
-    if (rhythm.missFlashBubbleIds.contains(bubbleId)) {
-      return BubbleVisualState.miss;
+    if (rhythm.cuedBubbleIds.contains(bubbleId)) {
+      return BubbleVisualState.cued;
     }
     if (rhythm.poppedBubbleIds.contains(bubbleId)) {
       return BubbleVisualState.popped;
-    }
-    if (rhythm.cuedBubbleIds.contains(bubbleId)) {
-      return BubbleVisualState.cued;
     }
     return BubbleVisualState.idle;
   }

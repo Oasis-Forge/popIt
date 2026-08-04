@@ -12,7 +12,6 @@ class RhythmController extends ChangeNotifier {
   final Set<int> _resolvedIds = {};
   final Set<int> _cuedBubbleIds = {};
   final Set<int> _poppedBubbleIds = {};
-  final Set<int> _missFlashBubbleIds = {};
 
   int _score = 0;
   int _combo = 0;
@@ -40,7 +39,6 @@ class RhythmController extends ChangeNotifier {
   int get judgementToken => _judgementToken;
   Set<int> get cuedBubbleIds => _cuedBubbleIds;
   Set<int> get poppedBubbleIds => _poppedBubbleIds;
-  Set<int> get missFlashBubbleIds => _missFlashBubbleIds;
 
   int get totalNotes => _chart.notes.length;
 
@@ -78,6 +76,8 @@ class RhythmController extends ChangeNotifier {
 
     if (best == null) {
       _registerMiss(bubbleId: bubbleId, fromTap: true);
+      // Stay pressed until the round ends or this bubble is cued again.
+      _poppedBubbleIds.add(bubbleId);
       notifyListeners();
       return HitResult(
         judgement: Judgement.miss,
@@ -96,7 +96,6 @@ class RhythmController extends ChangeNotifier {
     _resolveNote(best);
     final points = _applyHit(judgement);
     _poppedBubbleIds.add(bubbleId);
-    _missFlashBubbleIds.remove(bubbleId);
     _lastDeltaMs = delta;
     _setJudgement(judgement);
     _refreshCues();
@@ -110,18 +109,11 @@ class RhythmController extends ChangeNotifier {
     );
   }
 
-  void clearTransientFlash(int bubbleId) {
-    if (_missFlashBubbleIds.remove(bubbleId)) {
-      notifyListeners();
-    }
-  }
-
   void reset() {
     _pending = List<Note>.from(_chart.notes);
     _resolvedIds.clear();
     _cuedBubbleIds.clear();
     _poppedBubbleIds.clear();
-    _missFlashBubbleIds.clear();
     _score = 0;
     _combo = 0;
     _maxCombo = 0;
@@ -188,10 +180,10 @@ class RhythmController extends ChangeNotifier {
     _combo = 0;
     _missCount += 1;
     _lastDeltaMs = 0;
-    _missFlashBubbleIds.add(bubbleId);
     _setJudgement(Judgement.miss);
-    if (!fromTap) {
-      // Auto-miss still flashes the bubble that was expected.
+    // Only player taps leave a lasting pressed stone; timed-out cues do not.
+    if (fromTap) {
+      _poppedBubbleIds.add(bubbleId);
     }
   }
 

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../game/widgets/vault_decor.dart';
 import '../theme/game_theme.dart';
 import 'game_screen.dart';
+import 'road_to_glory_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -77,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen>
                         ),
                         const SizedBox(height: 20),
                         Text(
-                          '20 stones. 128 beats. Zero excuses.',
+                          'Two ways in. Same stones. Different glory.',
                           textAlign: TextAlign.center,
                           style: vaultLabel(
                             size: 13,
@@ -103,7 +104,8 @@ class _HomeScreenState extends State<HomeScreen>
                             ),
                           ),
                           child: VaultMarquee(
-                            text: 'DEMO BEAT  \u2726  120 BPM  \u2726  0:32  \u2726  ',
+                            text:
+                                'RHYTHM  \u2726  ROAD TO GLORY  \u2726  POP STONES  \u2726  ',
                             style: vaultLabel(
                               size: 10,
                               color:
@@ -113,12 +115,23 @@ class _HomeScreenState extends State<HomeScreen>
                           ),
                         ),
                         VaultCta(
-                          label: 'PLAY',
+                          label: 'RHYTHM',
                           shimmer: true,
                           onPressed: () {
                             Navigator.of(context).push(
                               MaterialPageRoute<void>(
                                 builder: (_) => const GameScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        VaultCta(
+                          label: 'ROAD TO GLORY',
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (_) => const RoadToGloryScreen(),
                               ),
                             );
                           },

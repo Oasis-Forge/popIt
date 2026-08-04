@@ -57,18 +57,42 @@ class _PopBubbleState extends State<PopBubble>
     super.dispose();
   }
 
+  List<Color> _pressedTints({required double darken}) {
+    return [
+      for (final c in widget.tints) Color.lerp(c, const Color(0xFF1A0A14), darken)!,
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     final cued = widget.state == BubbleVisualState.cued;
     final popped = widget.state == BubbleVisualState.popped;
     final miss = widget.state == BubbleVisualState.miss;
+    final pressed = popped || miss;
 
-    final veil = cued ? 0.0 : (widget.dimIdle ? 0.62 : 0.12);
+    // Keep the stone's own hue when pressed — just sink it deeper.
+    final stoneTints = miss
+        ? _pressedTints(darken: 0.55)
+        : popped
+            ? _pressedTints(darken: 0.42)
+            : widget.tints;
+
+    final veil = cued
+        ? 0.0
+        : pressed
+            ? 0.48
+            : (widget.dimIdle ? 0.62 : 0.12);
     final scale = cued
         ? 1.14
-        : popped
-            ? 0.84
+        : pressed
+            ? 0.78
             : 1.0;
+    final facetOpacity = cued
+        ? 0.95
+        : pressed
+            ? 0.08
+            : 0.32;
+    final glossAlpha = pressed ? 0.12 : 0.5;
 
     return GestureDetector(
       onTap: () {
@@ -128,9 +152,9 @@ class _PopBubbleState extends State<PopBubble>
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.6),
-                        offset: const Offset(0, 4),
-                        blurRadius: 9,
+                        color: Colors.black.withValues(alpha: pressed ? 0.25 : 0.6),
+                        offset: Offset(0, pressed ? 1 : 4),
+                        blurRadius: pressed ? 3 : 9,
                       ),
                     ],
                   ),
@@ -138,19 +162,41 @@ class _PopBubbleState extends State<PopBubble>
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
-                        DecoratedBox(
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 120),
                           decoration: BoxDecoration(
                             gradient: RadialGradient(
-                              center: const Alignment(-0.32, -0.48),
+                              center: pressed
+                                  ? const Alignment(0.2, 0.25)
+                                  : const Alignment(-0.32, -0.48),
                               radius: 0.95,
-                              colors: widget.tints,
+                              colors: stoneTints,
                               stops: const [0.0, 0.44, 1.0],
                             ),
                           ),
                         ),
+                        // Inner well shadow when pressed in.
+                        if (pressed)
+                          DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: RadialGradient(
+                                center: Alignment.center,
+                                radius: 0.85,
+                                colors: [
+                                  Colors.transparent,
+                                  Color.lerp(
+                                    widget.tints.last,
+                                    Colors.black,
+                                    0.65,
+                                  )!.withValues(alpha: 0.55),
+                                ],
+                                stops: const [0.35, 1.0],
+                              ),
+                            ),
+                          ),
                         // Mirror facets.
                         AnimatedOpacity(
-                          opacity: cued ? 0.95 : 0.32,
+                          opacity: facetOpacity,
                           duration: const Duration(milliseconds: 120),
                           child: const DecoratedBox(
                             decoration: BoxDecoration(
@@ -165,7 +211,16 @@ class _PopBubbleState extends State<PopBubble>
                                   Color(0x99FFD93D),
                                   Color(0x00FFFFFF),
                                 ],
-                                stops: [0.0, 0.09, 0.2, 0.32, 0.45, 0.57, 0.7, 0.83],
+                                stops: [
+                                  0.0,
+                                  0.09,
+                                  0.2,
+                                  0.32,
+                                  0.45,
+                                  0.57,
+                                  0.7,
+                                  0.83,
+                                ],
                               ),
                             ),
                           ),
@@ -181,7 +236,7 @@ class _PopBubbleState extends State<PopBubble>
                                   begin: Alignment.topCenter,
                                   end: Alignment.bottomCenter,
                                   colors: [
-                                    Colors.white.withValues(alpha: 0.5),
+                                    Colors.white.withValues(alpha: glossAlpha),
                                     Colors.transparent,
                                   ],
                                 ),
@@ -189,10 +244,14 @@ class _PopBubbleState extends State<PopBubble>
                             ),
                           ),
                         ),
-                        // Idle veil.
+                        // Idle / pressed veil (hue-preserving, never red).
                         AnimatedContainer(
                           duration: const Duration(milliseconds: 120),
-                          color: VaultColors.dimVeil.withValues(alpha: veil),
+                          color: Color.lerp(
+                            widget.tints[1],
+                            VaultColors.dimVeil,
+                            0.7,
+                          )!.withValues(alpha: veil),
                         ),
                       ],
                     ),
@@ -226,21 +285,6 @@ class _PopBubbleState extends State<PopBubble>
                         ),
                       ],
                     ),
-                  ),
-                ),
-              ),
-            ),
-
-          // Miss flash.
-          if (miss)
-            FractionallySizedBox(
-              widthFactor: 0.78,
-              child: AspectRatio(
-                aspectRatio: 1,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: VaultColors.missRed.withValues(alpha: 0.6),
                   ),
                 ),
               ),

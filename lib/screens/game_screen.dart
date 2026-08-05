@@ -410,10 +410,7 @@ class _GameScreenState extends State<GameScreen>
     if (result.judgement == Judgement.perfect ||
         result.judgement == Judgement.good) {
       if (haptics) HapticFeedback.lightImpact();
-      _audio.playHitTone(
-        combo: rhythm.combo,
-        perfect: result.judgement == Judgement.perfect,
-      );
+      _audio.playPop();
       if (rhythm.combo > 0 && rhythm.combo % 10 == 0 && haptics) {
         HapticFeedback.mediumImpact();
       }

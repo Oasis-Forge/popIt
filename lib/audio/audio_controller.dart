@@ -3,34 +3,30 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 
-class _HitSlot {
-  _HitSlot() : player = AudioPlayer();
+class _PopSlot {
+  _PopSlot() : player = AudioPlayer();
 
   final AudioPlayer player;
-  int? loadedNote;
   Future<void> chain = Future<void>.value();
 }
 
-/// Background music + melodic hit bank so correct taps form a phrase.
+/// Background music + short pop / lose SFX.
 class AudioController {
   AudioController()
       : _music = AudioPlayer(),
         _lose = AudioPlayer(),
-        _hitPool = List.generate(8, (_) => _HitSlot());
+        _popPool = List.generate(4, (_) => _PopSlot());
 
   final AudioPlayer _music;
   final AudioPlayer _lose;
-  final List<_HitSlot> _hitPool;
+  final List<_PopSlot> _popPool;
 
   double _musicVolume = 0.55;
   double _sfxVolume = 0.9;
   bool _musicMuted = false;
   bool _sfxMuted = false;
-  bool _hitsReady = false;
+  bool _popsReady = false;
   int _poolCursor = 0;
-
-  /// Pleasant looping phrase over an 8-note pentatonic bank.
-  static const _phrase = [0, 2, 4, 3, 5, 4, 2, 3, 4, 6, 5, 4, 3, 2, 1, 0];
 
   Stream<Duration> get positionStream => _music.positionStream;
   Stream<PlayerState> get playerStateStream => _music.playerStateStream;
@@ -46,7 +42,7 @@ class AudioController {
     if (loseSfxAsset != null) {
       await _lose.setAsset(loseSfxAsset);
     }
-    await _warmupHitPool();
+    await _warmupPopPool(popSfxAsset);
     await _applyVolumes();
   }
 
@@ -55,24 +51,21 @@ class AudioController {
     required String loseSfxAsset,
   }) async {
     await _lose.setAsset(loseSfxAsset);
-    await _warmupHitPool();
+    await _warmupPopPool(popSfxAsset);
     await _applyVolumes();
   }
 
-  /// Preload every note into the pool so first taps aren't racing setAsset.
-  Future<void> _warmupHitPool() async {
-    if (_hitsReady) return;
+  Future<void> _warmupPopPool(String popSfxAsset) async {
+    if (_popsReady) return;
     try {
-      for (var i = 0; i < _hitPool.length; i++) {
-        final note = i % 8;
-        await _hitPool[i].player.setAsset('assets/audio/hits/hit_$note.wav');
-        _hitPool[i].loadedNote = note;
-        await _hitPool[i].player.setVolume(0);
+      for (final slot in _popPool) {
+        await slot.player.setAsset(popSfxAsset);
+        await slot.player.setVolume(0);
       }
-      _hitsReady = true;
+      _popsReady = true;
     } catch (e) {
-      debugPrint('Hit pool warmup failed: $e');
-      _hitsReady = false;
+      debugPrint('Pop pool warmup failed: $e');
+      _popsReady = false;
     }
   }
 
@@ -122,50 +115,24 @@ class AudioController {
     await _music.setLoopMode(enabled ? LoopMode.one : LoopMode.off);
   }
 
-  /// Melodic reward for a correct hit — advances a phrase with combo.
-  /// Non-blocking so rapid taps don't drop notes.
-  void playHitTone({
-    required int combo,
-    required bool perfect,
-  }) {
+  /// Short pop on a correct bubble tap. Non-blocking for rapid hits.
+  void playPop() {
     if (_sfxMuted || _sfxVolume <= 0) return;
-    final step = combo <= 0 ? 0 : (combo - 1) % _phrase.length;
-    var note = _phrase[step];
-    if (!perfect) {
-      note = (note - 1).clamp(0, 7);
-    }
-    if (combo > 0 && combo % 10 == 0) {
-      note = (_phrase[step] + 3).clamp(0, 7);
-    }
-    final gain = _sfxVolume * (perfect ? 1.0 : 0.72);
-    final slot = _hitPool[_poolCursor++ % _hitPool.length];
-    // Serialize per-slot only; other slots stay free for polyphony.
-    slot.chain = slot.chain.then((_) => _triggerHit(slot, note, gain));
+    final slot = _popPool[_poolCursor++ % _popPool.length];
+    slot.chain = slot.chain.then((_) => _triggerPop(slot));
   }
 
-  Future<void> _triggerHit(_HitSlot slot, int note, double gain) async {
+  Future<void> _triggerPop(_PopSlot slot) async {
     try {
-      if (!_hitsReady) {
-        await _warmupHitPool();
-        if (!_hitsReady) return;
-      }
-      if (slot.loadedNote != note) {
-        await slot.player.setAsset('assets/audio/hits/hit_$note.wav');
-        slot.loadedNote = note;
-      }
-      await slot.player.setVolume(gain);
-      // Reliable retrigger on web + mobile.
+      if (!_popsReady) return;
+      await slot.player.setVolume(_sfxVolume);
       await slot.player.pause();
       await slot.player.seek(Duration.zero);
       unawaited(slot.player.play());
     } catch (e) {
-      debugPrint('Hit trigger failed (note $note): $e');
-      slot.loadedNote = null;
+      debugPrint('Pop trigger failed: $e');
     }
   }
-
-  @Deprecated('Use playHitTone for melodic feedback')
-  Future<void> playPop() async => playHitTone(combo: 1, perfect: true);
 
   Future<void> playLose() async {
     if (_sfxMuted || _sfxVolume <= 0) return;
@@ -179,7 +146,7 @@ class AudioController {
   Future<void> dispose() async {
     await _music.dispose();
     await _lose.dispose();
-    for (final slot in _hitPool) {
+    for (final slot in _popPool) {
       await slot.player.dispose();
     }
   }

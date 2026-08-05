@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
 import '../../theme/game_theme.dart';
+import '../../theme/vault_palette.dart';
 
 /// A slowly rotating, heavily blurred spectrum disc — the light source of the
 /// whole design. Used behind the wordmark and behind cued stones.
@@ -26,8 +27,13 @@ class SpectrumBloom extends StatefulWidget {
 
 class _SpectrumBloomState extends State<SpectrumBloom>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _spin =
-      AnimationController(vsync: this, duration: widget.period)..repeat();
+  late final AnimationController _spin;
+
+  @override
+  void initState() {
+    super.initState();
+    _spin = AnimationController(vsync: this, duration: widget.period)..repeat();
+  }
 
   @override
   void dispose() {
@@ -37,6 +43,7 @@ class _SpectrumBloomState extends State<SpectrumBloom>
 
   @override
   Widget build(BuildContext context) {
+    final spectrum = context.vault.spectrum;
     return IgnorePointer(
       child: Opacity(
         opacity: widget.opacity,
@@ -50,9 +57,9 @@ class _SpectrumBloomState extends State<SpectrumBloom>
             child: Container(
               width: widget.size,
               height: widget.size,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: SweepGradient(colors: VaultColors.spectrum),
+                gradient: SweepGradient(colors: spectrum),
               ),
             ),
           ),
@@ -108,8 +115,13 @@ class VaultMarquee extends StatefulWidget {
 
 class _VaultMarqueeState extends State<VaultMarquee>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _run =
-      AnimationController(vsync: this, duration: widget.period)..repeat();
+  late final AnimationController _run;
+
+  @override
+  void initState() {
+    super.initState();
+    _run = AnimationController(vsync: this, duration: widget.period)..repeat();
+  }
 
   @override
   void dispose() {
@@ -123,9 +135,6 @@ class _VaultMarqueeState extends State<VaultMarquee>
     return ClipRect(
       child: SizedBox(
         height: 22,
-        // The two-copy strip is wider than the viewport by design; let it size
-        // to its content so it scrolls instead of reporting a RenderFlex
-        // overflow.
         child: OverflowBox(
           minWidth: 0,
           maxWidth: double.infinity,
@@ -152,7 +161,10 @@ class _VaultMarqueeState extends State<VaultMarquee>
 /// A soft highlight band that travels across a surface — the "glint" on the
 /// primary CTA.
 class ShimmerSweep extends StatefulWidget {
-  const ShimmerSweep({super.key, this.period = const Duration(milliseconds: 2600)});
+  const ShimmerSweep({
+    super.key,
+    this.period = const Duration(milliseconds: 2600),
+  });
 
   final Duration period;
 
@@ -162,8 +174,14 @@ class ShimmerSweep extends StatefulWidget {
 
 class _ShimmerSweepState extends State<ShimmerSweep>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _sweep =
-      AnimationController(vsync: this, duration: widget.period)..repeat();
+  late final AnimationController _sweep;
+
+  @override
+  void initState() {
+    super.initState();
+    _sweep =
+        AnimationController(vsync: this, duration: widget.period)..repeat();
+  }
 
   @override
   void dispose() {
@@ -224,17 +242,18 @@ class VaultCta extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final v = context.vault;
     return GestureDetector(
       onTap: onPressed,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(999),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            gradient: VaultColors.ctaGradient,
+            gradient: v.ctaGradient,
             borderRadius: BorderRadius.circular(999),
             boxShadow: [
               BoxShadow(
-                color: VaultColors.magenta.withValues(alpha: 0.4),
+                color: v.magenta.withValues(alpha: 0.4),
                 blurRadius: 34,
                 offset: const Offset(0, 14),
               ),
@@ -250,7 +269,7 @@ class VaultCta extends StatelessWidget {
                     label,
                     style: vaultDisplay(
                       size: fontSize,
-                      color: VaultColors.ink,
+                      color: v.ink,
                       letterSpacing: fontSize * 0.28,
                     ),
                   ),

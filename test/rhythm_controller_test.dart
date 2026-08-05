@@ -44,6 +44,17 @@ void main() {
     expect(rhythm.missCount, 1);
   });
 
+  test('Early tap on cued bubble is ignored, not a miss', () {
+    final rhythm = RhythmController(
+      chart: chartWith([const Note(id: 0, tMs: 1000, bubbleId: 3)]),
+    )..updateTime(1000 - 300);
+    expect(rhythm.cuedBubbleIds.contains(3), isTrue);
+    final hit = rhythm.onBubbleTapped(3);
+    expect(hit, isNull);
+    expect(rhythm.missCount, 0);
+    expect(rhythm.combo, 0);
+  });
+
   test('Auto-miss past good window', () {
     final rhythm = RhythmController(
       chart: chartWith([const Note(id: 0, tMs: 1000, bubbleId: 2)]),

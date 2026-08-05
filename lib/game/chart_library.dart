@@ -39,7 +39,12 @@ class ChartLibrary {
 
   final List<ChartMeta> charts;
 
-  ChartMeta get defaultChart => charts.first;
+  /// Tracks offered in pickers / Daily (excludes coach).
+  List<ChartMeta> get songCharts =>
+      charts.where((c) => c.id != 'coach_intro').toList();
+
+  ChartMeta get defaultChart =>
+      songCharts.isNotEmpty ? songCharts.first : charts.first;
 
   ChartMeta byId(String id) =>
       charts.firstWhere((c) => c.id == id, orElse: () => defaultChart);

@@ -1,13 +1,49 @@
 {
   "charts": [
     {
+      "id": "coach_intro",
+      "title": "Coach Intro",
+      "artist": "Pop It",
+      "bpm": 120,
+      "durationMs": 16000,
+      "audioAsset": "assets/audio/demo_beat.wav",
+      "chartAsset": "assets/charts/coach_intro.json"
+    },
+    {
       "id": "demo_beat",
       "title": "Demo Beat",
       "artist": "Pop It",
       "bpm": 120,
       "durationMs": 32000,
       "audioAsset": "assets/audio/demo_beat.wav",
-      "chartAsset": "assets/charts/demo.json"
+      "chartAsset": "assets/charts/demo_beat.json"
+    },
+    {
+      "id": "neon_pulse",
+      "title": "Neon Pulse",
+      "artist": "Vault Labs",
+      "bpm": 128,
+      "durationMs": 30000,
+      "audioAsset": "assets/audio/neon_pulse.wav",
+      "chartAsset": "assets/charts/neon_pulse.json"
+    },
+    {
+      "id": "velvet_groove",
+      "title": "Velvet Groove",
+      "artist": "Disco Room",
+      "bpm": 100,
+      "durationMs": 33600,
+      "audioAsset": "assets/audio/velvet_groove.wav",
+      "chartAsset": "assets/charts/velvet_groove.json"
+    },
+    {
+      "id": "rush_hour",
+      "title": "Rush Hour",
+      "artist": "Arcade Wire",
+      "bpm": 140,
+      "durationMs": 28800,
+      "audioAsset": "assets/audio/rush_hour.wav",
+      "chartAsset": "assets/charts/rush_hour.json"
     }
   ]
 }

@@ -1,0 +1,15 @@
+{
+  "title": "Coach Intro",
+  "audioAsset": "assets/audio/demo_beat.wav",
+  "durationMs": 16000,
+  "notes": [
+    { "tMs": 2000, "bubbleId": 4, "weight": 1 },
+    { "tMs": 3500, "bubbleId": 1, "weight": 1 },
+    { "tMs": 5000, "bubbleId": 7, "weight": 1 },
+    { "tMs": 6500, "bubbleId": 3, "weight": 1 },
+    { "tMs": 8000, "bubbleId": 5, "weight": 1 },
+    { "tMs": 9500, "bubbleId": 0, "weight": 1 },
+    { "tMs": 11000, "bubbleId": 8, "weight": 1 },
+    { "tMs": 12500, "bubbleId": 4, "weight": 1 }
+  ]
+}

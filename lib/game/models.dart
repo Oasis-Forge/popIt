@@ -100,22 +100,22 @@ class DifficultyConfig {
   static const map = <Difficulty, DifficultyConfig>{
     Difficulty.easy: DifficultyConfig(
       difficulty: Difficulty.easy,
-      timing: TimingConfig(perfectWindowMs: 70, goodWindowMs: 170, cueLeadMs: 700),
+      timing: TimingConfig(perfectWindowMs: 80, goodWindowMs: 190, cueLeadMs: 700),
       density: DensityProfile(maxWeight: 1, minGapMs: 400),
     ),
     Difficulty.normal: DifficultyConfig(
       difficulty: Difficulty.normal,
-      timing: TimingConfig(perfectWindowMs: 45, goodWindowMs: 120, cueLeadMs: 550),
+      timing: TimingConfig(perfectWindowMs: 55, goodWindowMs: 145, cueLeadMs: 550),
       density: DensityProfile(maxWeight: 2, minGapMs: 260),
     ),
     Difficulty.hard: DifficultyConfig(
       difficulty: Difficulty.hard,
-      timing: TimingConfig(perfectWindowMs: 32, goodWindowMs: 95, cueLeadMs: 450),
+      timing: TimingConfig(perfectWindowMs: 38, goodWindowMs: 110, cueLeadMs: 450),
       density: DensityProfile(maxWeight: 3, minGapMs: 150),
     ),
     Difficulty.expert: DifficultyConfig(
       difficulty: Difficulty.expert,
-      timing: TimingConfig(perfectWindowMs: 22, goodWindowMs: 70, cueLeadMs: 380),
+      timing: TimingConfig(perfectWindowMs: 26, goodWindowMs: 85, cueLeadMs: 380),
       density: DensityProfile(maxWeight: 3, minGapMs: 0),
     ),
   };

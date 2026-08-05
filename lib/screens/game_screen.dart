@@ -21,6 +21,7 @@ import '../game/widgets/bubble.dart';
 import '../game/widgets/hud.dart';
 import '../game/widgets/pop_it_board.dart';
 import '../game/widgets/results_sheet.dart';
+import '../game/widgets/share_score_card.dart';
 import '../game/widgets/vault_decor.dart';
 import '../services/versus_service.dart';
 import '../theme/game_theme.dart';
@@ -43,9 +44,9 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   final AudioController _audio = AudioController();
-  final GlobalKey _shareKey = GlobalKey();
+  final GlobalKey _shareCardKey = GlobalKey();
   RhythmController? _rhythm;
   StreamSubscription<Duration>? _positionSub;
   StreamSubscription<PlayerState>? _stateSub;
@@ -55,7 +56,10 @@ class _GameScreenState extends State<GameScreen>
   bool _paused = false;
   int _countdown = 3;
   int _comboFlash = 0;
+  bool _timingEmphasize = false;
+  RunResult? _shareResult;
   late final AnimationController _comboBloom;
+  late final AnimationController _boardPulse;
 
   @override
   void initState() {
@@ -63,6 +67,10 @@ class _GameScreenState extends State<GameScreen>
     _comboBloom = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 520),
+    );
+    _boardPulse = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 420),
     );
     WidgetsBinding.instance.addPostFrameCallback((_) => _boot());
   }
@@ -261,10 +269,30 @@ class _GameScreenState extends State<GameScreen>
     required UnlockProgress? progress,
     required List<VersusPlayerState>? ranking,
   }) async {
+    _shareResult = result;
     final delta = previousBestScore == null
         ? null
         : result.score - previousBestScore;
     final harder = _nextHarder();
+    final isDaily = widget.config.isDaily;
+    final services = AppScope.of(context);
+    String? footerHint;
+    if (isDaily) {
+      final tomorrow = DailyChallenge.forTomorrow(services.chartLibrary);
+      footerHint =
+          'One try used · tomorrow: ${tomorrow.blurb(services.chartLibrary)}';
+    }
+
+    final tryNextMode = !isDaily &&
+            !widget.isCoach &&
+            harder == null
+        ? (widget.config.mode == GameMode.classic
+            ? GameMode.survival
+            : widget.config.mode == GameMode.survival
+                ? GameMode.precision
+                : null)
+        : null;
+
     await showResultsSheet(
       context: context,
       result: result,
@@ -272,10 +300,12 @@ class _GameScreenState extends State<GameScreen>
         Navigator.of(context).pop();
         Navigator.of(context).pop();
       },
-      onReplay: () {
-        Navigator.of(context).pop();
-        _replay();
-      },
+      onReplay: isDaily || widget.isCoach
+          ? null
+          : () {
+              Navigator.of(context).pop();
+              _replay();
+            },
       onShare: widget.isCoach ? null : _shareScore,
       meta: ResultsMeta(
         isNewBest: isNewBest,
@@ -284,17 +314,16 @@ class _GameScreenState extends State<GameScreen>
         unlockProgress: newly.isEmpty ? progress : null,
         newlyUnlocked: newly,
         versusRanking: ranking,
-        onDaily: widget.config.isDaily || widget.isCoach
+        footerHint: footerHint,
+        onDaily: isDaily || widget.isCoach
             ? null
             : () {
                 final nav = Navigator.of(context);
-                final services = AppScope.of(context);
                 final daily =
                     DailyChallenge.forToday(services.chartLibrary);
-                nav.pop(); // close sheet
-                nav.pop(); // leave game
+                nav.pop();
+                nav.pop();
                 if (services.profile.hasPlayedDaily(daily.ymd)) return;
-                // Home is under the popped routes; push from root after frame.
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   final homeCtx = nav.context;
                   if (!homeCtx.mounted) return;
@@ -312,7 +341,7 @@ class _GameScreenState extends State<GameScreen>
                   );
                 });
               },
-        onHarder: harder == null || widget.isCoach
+        onHarder: harder == null || widget.isCoach || isDaily
             ? null
             : () {
                 Navigator.of(context).pop();
@@ -330,18 +359,44 @@ class _GameScreenState extends State<GameScreen>
                   ),
                 );
               },
+        onTryNext: tryNextMode == null
+            ? null
+            : () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute<void>(
+                    builder: (_) => GameScreen(
+                      config: RunConfig(
+                        chartId: widget.config.chartId,
+                        difficulty: widget.config.difficulty,
+                        mode: tryNextMode,
+                        board: widget.config.board,
+                        isDaily: false,
+                      ),
+                    ),
+                  ),
+                );
+              },
+        tryNextLabel: tryNextMode == GameMode.survival
+            ? 'TRY SURVIVAL'
+            : tryNextMode == GameMode.precision
+                ? 'TRY PRECISION'
+                : null,
       ),
     );
   }
 
   Future<void> _shareScore() async {
     final rhythm = _rhythm;
-    if (rhythm == null) return;
-    final r = rhythm.buildResult();
+    final r = _shareResult ?? rhythm?.buildResult();
+    if (r == null || rhythm == null) return;
     final text =
         'Pop It ${r.grade}: ${r.score} pts · x${r.maxCombo} · ${rhythm.chart.title}';
+    // Ensure share card is painted with latest result.
+    setState(() => _shareResult = r);
+    await Future<void>.delayed(Duration.zero);
     try {
-      final boundary = _shareKey.currentContext?.findRenderObject()
+      final boundary = _shareCardKey.currentContext?.findRenderObject()
           as RenderRepaintBoundary?;
       if (boundary != null) {
         final image = await boundary.toImage(pixelRatio: 2.5);
@@ -398,6 +453,15 @@ class _GameScreenState extends State<GameScreen>
     _comboFlash = combo;
     if (reduceMotion) return;
     _comboBloom.forward(from: 0);
+    _boardPulse.forward(from: 0);
+  }
+
+  void _flashTimingEmphasis() {
+    if (!mounted) return;
+    setState(() => _timingEmphasize = true);
+    Future<void>.delayed(const Duration(milliseconds: 220), () {
+      if (mounted) setState(() => _timingEmphasize = false);
+    });
   }
 
   void _onBubbleTap(int bubbleId) {
@@ -407,6 +471,7 @@ class _GameScreenState extends State<GameScreen>
     if (result == null) return;
     final services = AppScope.of(context);
     final haptics = services.settings.hapticsEnabled;
+    final reduceMotion = services.settings.reduceMotion;
     if (result.judgement == Judgement.perfect ||
         result.judgement == Judgement.good) {
       if (haptics) HapticFeedback.lightImpact();
@@ -414,10 +479,16 @@ class _GameScreenState extends State<GameScreen>
       if (rhythm.combo > 0 && rhythm.combo % 10 == 0 && haptics) {
         HapticFeedback.mediumImpact();
       }
-      _celebrateCombo(rhythm.combo, services.settings.reduceMotion);
+      _celebrateCombo(rhythm.combo, reduceMotion);
+      if (result.judgement == Judgement.good &&
+          widget.config.mode != GameMode.precision &&
+          !reduceMotion) {
+        _flashTimingEmphasis();
+      }
     } else {
       if (haptics) HapticFeedback.heavyImpact();
       _audio.playLose();
+      if (!reduceMotion) _flashTimingEmphasis();
     }
   }
 
@@ -439,6 +510,7 @@ class _GameScreenState extends State<GameScreen>
     _rhythm?.dispose();
     _audio.dispose();
     _comboBloom.dispose();
+    _boardPulse.dispose();
     super.dispose();
   }
 
@@ -515,12 +587,10 @@ class _GameScreenState extends State<GameScreen>
                       final showGood = !(precision &&
                           rhythm.lastJudgement == Judgement.good);
 
-                      return RepaintBoundary(
-                        key: _shareKey,
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 24, 20, 30),
-                          child: Column(
-                            children: [
+                      return Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 24, 20, 30),
+                        child: Column(
+                          children: [
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
@@ -641,6 +711,8 @@ class _GameScreenState extends State<GameScreen>
                                     showGood,
                                 goodWindowMs: widget.config.difficultyConfig
                                     .timing.goodWindowMs,
+                                emphasize: _timingEmphasize &&
+                                    rhythm.lastJudgement != Judgement.perfect,
                               ),
                               const SizedBox(height: 6),
                               JudgementLine(
@@ -653,14 +725,29 @@ class _GameScreenState extends State<GameScreen>
                                 child: Center(
                                   child: ConstrainedBox(
                                     constraints: BoxConstraints(maxWidth: maxW),
-                                    child: PopItBoard(
-                                      rows: board.rows,
-                                      cols: board.cols,
-                                      boardScale: services.settings.boardScale,
-                                      stateForBubble: _stateFor,
-                                      onBubbleTap: _onBubbleTap,
-                                      cueProgressFor: rhythm.cueProgressFor,
-                                      precisionMode: precision,
+                                    child: AnimatedBuilder(
+                                      animation: _boardPulse,
+                                      builder: (context, child) {
+                                        final p = Curves.easeOut
+                                            .transform(_boardPulse.value);
+                                        final scale = 1.0 + (1 - p) * 0.035;
+                                        return Transform.scale(
+                                          scale: _boardPulse.isDismissed
+                                              ? 1
+                                              : scale,
+                                          child: child,
+                                        );
+                                      },
+                                      child: PopItBoard(
+                                        rows: board.rows,
+                                        cols: board.cols,
+                                        boardScale:
+                                            services.settings.boardScale,
+                                        stateForBubble: _stateFor,
+                                        onBubbleTap: _onBubbleTap,
+                                        cueProgressFor: rhythm.cueProgressFor,
+                                        precisionMode: precision,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -678,7 +765,6 @@ class _GameScreenState extends State<GameScreen>
                               ),
                             ],
                           ),
-                        ),
                       );
                     },
                   ),
@@ -732,6 +818,27 @@ class _GameScreenState extends State<GameScreen>
                   ),
                 ),
               ),
+            // Offscreen share card (captured instead of the live HUD).
+            Positioned(
+              left: -4000,
+              top: 0,
+              child: RepaintBoundary(
+                key: _shareCardKey,
+                child: ShareScoreCard(
+                  grade: _shareResult?.grade ??
+                      _rhythm?.buildResult().grade ??
+                      'UNCUT',
+                  score: _shareResult?.score ?? _rhythm?.score ?? 0,
+                  maxCombo:
+                      _shareResult?.maxCombo ?? _rhythm?.maxCombo ?? 0,
+                  accuracy:
+                      _shareResult?.accuracy ?? _rhythm?.accuracy ?? 0,
+                  chartTitle: _rhythm?.chart.title ?? '',
+                  isDaily: widget.config.isDaily,
+                  dailyYmd: widget.dailySeed,
+                ),
+              ),
+            ),
           ],
         ),
       ),

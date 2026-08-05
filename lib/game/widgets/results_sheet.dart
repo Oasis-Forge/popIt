@@ -15,8 +15,11 @@ class ResultsMeta {
     this.unlockProgress,
     this.newlyUnlocked = const [],
     this.versusRanking,
+    this.footerHint,
     this.onDaily,
     this.onHarder,
+    this.onTryNext,
+    this.tryNextLabel,
   });
 
   final bool isNewBest;
@@ -25,15 +28,18 @@ class ResultsMeta {
   final UnlockProgress? unlockProgress;
   final List<ThemeUnlockInfo> newlyUnlocked;
   final List<VersusPlayerState>? versusRanking;
+  final String? footerHint;
   final VoidCallback? onDaily;
   final VoidCallback? onHarder;
+  final VoidCallback? onTryNext;
+  final String? tryNextLabel;
 }
 
 Future<void> showResultsSheet({
   required BuildContext context,
   required RunResult result,
   required VoidCallback onHome,
-  required VoidCallback onReplay,
+  VoidCallback? onReplay,
   VoidCallback? onShare,
   ResultsMeta meta = const ResultsMeta(),
 }) {
@@ -45,6 +51,9 @@ Future<void> showResultsSheet({
     isScrollControlled: true,
     builder: (context) {
       final v = context.vault;
+      final hasSecondary = meta.onDaily != null ||
+          meta.onHarder != null ||
+          meta.onTryNext != null;
       return Container(
         decoration: BoxDecoration(
           borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
@@ -99,6 +108,18 @@ Future<void> showResultsSheet({
                   weight: FontWeight.w400,
                 ),
               ),
+              if (meta.footerHint != null) ...[
+                const SizedBox(height: 12),
+                Text(
+                  meta.footerHint!,
+                  textAlign: TextAlign.center,
+                  style: vaultLabel(
+                    size: 12,
+                    color: v.cyan,
+                    weight: FontWeight.w400,
+                  ),
+                ),
+              ],
               if (meta.newlyUnlocked.isNotEmpty) ...[
                 const SizedBox(height: 14),
                 for (final u in meta.newlyUnlocked)
@@ -130,7 +151,9 @@ Future<void> showResultsSheet({
                             '#${i + 1}',
                             style: vaultLabel(
                               size: 12,
-                              color: i == 0 ? v.gold : v.paper.withValues(alpha: 0.55),
+                              color: i == 0
+                                  ? v.gold
+                                  : v.paper.withValues(alpha: 0.55),
                             ),
                           ),
                         ),
@@ -171,19 +194,21 @@ Future<void> showResultsSheet({
                       ),
                     ),
                   ],
-                  const SizedBox(width: 8),
-                  Expanded(
-                    flex: 2,
-                    child: VaultCta(
-                      label: 'AGAIN',
-                      fontSize: 13,
-                      verticalPadding: 17,
-                      onPressed: onReplay,
+                  if (onReplay != null) ...[
+                    const SizedBox(width: 8),
+                    Expanded(
+                      flex: 2,
+                      child: VaultCta(
+                        label: 'AGAIN',
+                        fontSize: 13,
+                        verticalPadding: 17,
+                        onPressed: onReplay,
+                      ),
                     ),
-                  ),
+                  ],
                 ],
               ),
-              if (meta.onDaily != null || meta.onHarder != null) ...[
+              if (hasSecondary) ...[
                 const SizedBox(height: 10),
                 Row(
                   children: [
@@ -194,13 +219,23 @@ Future<void> showResultsSheet({
                           child: const Text('DAILY'),
                         ),
                       ),
-                    if (meta.onDaily != null && meta.onHarder != null)
+                    if (meta.onDaily != null &&
+                        (meta.onHarder != null || meta.onTryNext != null))
                       const SizedBox(width: 8),
                     if (meta.onHarder != null)
                       Expanded(
                         child: OutlinedButton(
                           onPressed: meta.onHarder,
                           child: const Text('HARDER'),
+                        ),
+                      ),
+                    if (meta.onHarder != null && meta.onTryNext != null)
+                      const SizedBox(width: 8),
+                    if (meta.onTryNext != null)
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: meta.onTryNext,
+                          child: Text(meta.tryNextLabel ?? 'TRY NEXT'),
                         ),
                       ),
                   ],

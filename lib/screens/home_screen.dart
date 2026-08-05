@@ -421,11 +421,31 @@ class _HomeScreenState extends State<HomeScreen>
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            'Streak ${profile.streakCurrent} · ${profile.lifetimeScore} pts',
+                            profile.streakCurrent > 0
+                                ? 'Day ${profile.streakCurrent} streak · ${profile.lifetimeScore} pts'
+                                : '${profile.lifetimeScore} pts · start a streak today',
                             textAlign: TextAlign.center,
                             style: vaultLabel(
                               size: 11,
                               color: v.paper.withValues(alpha: 0.55),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            done
+                                ? () {
+                                    final best =
+                                        profile.bests[daily.bestKey];
+                                    return best == null
+                                        ? 'Daily done · come back tomorrow'
+                                        : 'Daily done · ${best.grade} ${best.score}';
+                                  }()
+                                : 'Daily today · ${daily.blurb(services.chartLibrary)}',
+                            textAlign: TextAlign.center,
+                            style: vaultLabel(
+                              size: 10,
+                              color: v.cyan.withValues(alpha: 0.85),
+                              weight: FontWeight.w400,
                             ),
                           ),
                           const SizedBox(height: 32),
@@ -498,8 +518,8 @@ class _HomeScreenState extends State<HomeScreen>
                           const SizedBox(height: 6),
                           Text(
                             done
-                                ? 'Come back tomorrow · ${daily.blurb(services.chartLibrary)}'
-                                : 'One try today · ${daily.blurb(services.chartLibrary)}',
+                                ? 'Come back tomorrow · ${DailyChallenge.forTomorrow(services.chartLibrary).blurb(services.chartLibrary)}'
+                                : 'One try · ${daily.blurb(services.chartLibrary)}',
                             textAlign: TextAlign.center,
                             style: vaultLabel(
                               size: 9,

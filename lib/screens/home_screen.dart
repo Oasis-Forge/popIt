@@ -25,16 +25,138 @@ class _HomeScreenState extends State<HomeScreen>
     duration: const Duration(milliseconds: 1800),
   )..repeat(reverse: true);
 
-  Difficulty _difficulty = Difficulty.normal;
-  GameMode _mode = GameMode.classic;
-
   @override
   void dispose() {
     _bob.dispose();
     super.dispose();
   }
 
-  String _modeLabel(GameMode m) => switch (m) {
+  Future<void> _openRhythmSetup() async {
+    final services = AppScope.of(context);
+    Difficulty difficulty = Difficulty.values.firstWhere(
+      (d) => d.name == services.settings.lastDifficulty,
+      orElse: () => Difficulty.normal,
+    );
+    GameMode mode = GameMode.values.firstWhere(
+      (m) => m.name == services.settings.lastMode,
+      orElse: () => GameMode.classic,
+    );
+
+    final config = await showModalBottomSheet<RunConfig>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setSheet) {
+            return Container(
+              decoration: const BoxDecoration(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0xFF2A0C36), VaultColors.plateDeep],
+                ),
+                border: Border(
+                  top: BorderSide(color: VaultColors.gold, width: 2),
+                ),
+              ),
+              padding: EdgeInsets.fromLTRB(
+                24,
+                18,
+                24,
+                24 + MediaQuery.paddingOf(context).bottom,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'RHYTHM SETUP',
+                    textAlign: TextAlign.center,
+                    style: vaultLabel(size: 12, color: VaultColors.gold),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Difficulty and mode only apply to Rhythm.',
+                    textAlign: TextAlign.center,
+                    style: vaultLabel(
+                      size: 10,
+                      color: VaultColors.paper.withValues(alpha: 0.5),
+                      weight: FontWeight.w400,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  DropdownButtonFormField<Difficulty>(
+                    initialValue: difficulty,
+                    dropdownColor: VaultColors.plateMid,
+                    decoration: const InputDecoration(
+                      labelText: 'Difficulty',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: [
+                      for (final d in Difficulty.values)
+                        DropdownMenuItem(value: d, child: Text(d.name)),
+                    ],
+                    onChanged: (v) {
+                      if (v != null) setSheet(() => difficulty = v);
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<GameMode>(
+                    initialValue: mode,
+                    dropdownColor: VaultColors.plateMid,
+                    decoration: const InputDecoration(
+                      labelText: 'Mode',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: [
+                      for (final m in GameMode.values)
+                        DropdownMenuItem(
+                          value: m,
+                          child: Text(_modeLabel(m)),
+                        ),
+                    ],
+                    onChanged: (v) {
+                      if (v != null) setSheet(() => mode = v);
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  VaultCta(
+                    label: 'PLAY',
+                    shimmer: true,
+                    onPressed: () {
+                      Navigator.of(context).pop(
+                        RunConfig(
+                          chartId: services.settings.lastChartId,
+                          difficulty: difficulty,
+                          mode: mode,
+                          board: services.settings.casualBoard
+                              ? BoardLayout.casual
+                              : BoardLayout.standard,
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    if (!mounted || config == null) return;
+    services.settings.update((s) {
+      s.lastDifficulty = config.difficulty.name;
+      s.lastMode = config.mode.name;
+    });
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => GameScreen(config: config)),
+    );
+  }
+
+  static String _modeLabel(GameMode m) => switch (m) {
         GameMode.classic => 'Classic',
         GameMode.survival => 'Survival',
         GameMode.precision => 'Precision',
@@ -115,69 +237,23 @@ class _HomeScreenState extends State<HomeScreen>
                           color: VaultColors.paper.withValues(alpha: 0.55),
                         ),
                       ),
-                      const SizedBox(height: 28),
-                      DropdownButtonFormField<Difficulty>(
-                        initialValue: _difficulty,
-                        dropdownColor: VaultColors.plateMid,
-                        decoration: const InputDecoration(
-                          labelText: 'Difficulty',
-                          border: OutlineInputBorder(),
-                        ),
-                        items: [
-                          for (final d in Difficulty.values)
-                            DropdownMenuItem(
-                              value: d,
-                              child: Text(d.name),
-                            ),
-                        ],
-                        onChanged: (v) {
-                          if (v != null) setState(() => _difficulty = v);
-                        },
-                      ),
-                      const SizedBox(height: 10),
-                      DropdownButtonFormField<GameMode>(
-                        initialValue: _mode,
-                        dropdownColor: VaultColors.plateMid,
-                        decoration: const InputDecoration(
-                          labelText: 'Mode',
-                          border: OutlineInputBorder(),
-                        ),
-                        items: [
-                          for (final m in GameMode.values)
-                            DropdownMenuItem(
-                              value: m,
-                              child: Text(_modeLabel(m)),
-                            ),
-                        ],
-                        onChanged: (v) {
-                          if (v != null) setState(() => _mode = v);
-                        },
-                      ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 32),
                       VaultCta(
                         label: 'RHYTHM',
                         shimmer: true,
-                        onPressed: () {
-                          final config = RunConfig(
-                            chartId: services.settings.lastChartId,
-                            difficulty: _difficulty,
-                            mode: _mode,
-                            board: services.settings.casualBoard
-                                ? BoardLayout.casual
-                                : BoardLayout.standard,
-                          );
-                          services.settings.update((s) {
-                            s.lastDifficulty = _difficulty.name;
-                            s.lastMode = _mode.name;
-                          });
-                          Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                              builder: (_) => GameScreen(config: config),
-                            ),
-                          );
-                        },
+                        onPressed: _openRhythmSetup,
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Pick difficulty & mode before you play',
+                        textAlign: TextAlign.center,
+                        style: vaultLabel(
+                          size: 9,
+                          color: VaultColors.paper.withValues(alpha: 0.4),
+                          weight: FontWeight.w400,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
                       VaultCta(
                         label: 'ROAD TO GLORY',
                         onPressed: () {
@@ -188,7 +264,17 @@ class _HomeScreenState extends State<HomeScreen>
                           );
                         },
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Survival climb — separate rules',
+                        textAlign: TextAlign.center,
+                        style: vaultLabel(
+                          size: 9,
+                          color: VaultColors.paper.withValues(alpha: 0.4),
+                          weight: FontWeight.w400,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
                       VaultCta(
                         label: 'VERSUS',
                         onPressed: () {
@@ -199,26 +285,45 @@ class _HomeScreenState extends State<HomeScreen>
                           );
                         },
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Friend match · classic rules',
+                        textAlign: TextAlign.center,
+                        style: vaultLabel(
+                          size: 9,
+                          color: VaultColors.paper.withValues(alpha: 0.4),
+                          weight: FontWeight.w400,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
                       OutlinedButton(
                         onPressed: () {
                           final seed = VersusService.dailySeed();
-                          final config = RunConfig(
-                            chartId: services.settings.lastChartId,
-                            difficulty: Difficulty.normal,
-                            mode: GameMode.classic,
-                            isDaily: true,
-                          );
                           Navigator.of(context).push(
                             MaterialPageRoute<void>(
                               builder: (_) => GameScreen(
-                                config: config,
+                                config: RunConfig(
+                                  chartId: services.settings.lastChartId,
+                                  difficulty: Difficulty.normal,
+                                  mode: GameMode.classic,
+                                  isDaily: true,
+                                ),
                                 dailySeed: seed,
                               ),
                             ),
                           );
                         },
                         child: const Text('DAILY CHALLENGE'),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Same chart for everyone today · classic / normal',
+                        textAlign: TextAlign.center,
+                        style: vaultLabel(
+                          size: 9,
+                          color: VaultColors.paper.withValues(alpha: 0.4),
+                          weight: FontWeight.w400,
+                        ),
                       ),
                     ],
                   ),

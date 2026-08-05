@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app/app_scope.dart';
+import '../data/theme_unlocks.dart';
 import '../game/chart_library.dart';
 import '../services/settings_controller.dart';
 import '../theme/game_theme.dart';
@@ -24,7 +25,7 @@ class SettingsScreen extends StatelessWidget {
         final s = services.settings;
         final profile = services.profile;
         final games = services.gamesService;
-        final charts = services.chartLibrary.charts;
+        final charts = services.chartLibrary.songCharts;
         final selectedChart = charts.any((c) => c.id == s.lastChartId)
             ? s.lastChartId
             : charts.first.id;
@@ -74,7 +75,7 @@ class SettingsScreen extends StatelessWidget {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
-                                    'Unlock this theme by playing',
+                                    unlockRuleFor(p.id),
                                     style: vaultLabel(size: 12),
                                   ),
                                   backgroundColor: v.plateDeep,
@@ -191,26 +192,40 @@ class SettingsScreen extends StatelessWidget {
                   if (games.isAndroid) ...[
                     const SizedBox(height: 12),
                     Text('Google Play Games', style: vaultDisplay(size: 18)),
-                    ListTile(
-                      title: Text(
-                        games.signedIn
-                            ? (games.displayName ?? 'Signed in')
-                            : 'Not signed in',
+                    if (!games.isConfigured)
+                      ListTile(
+                        title: const Text('Coming soon'),
+                        subtitle: Text(
+                          'Sign-in and leaderboards unlock after Play Console APP_ID is configured.',
+                          style: vaultLabel(
+                            size: 11,
+                            color: v.paper.withValues(alpha: 0.55),
+                            weight: FontWeight.w400,
+                          ),
+                        ),
+                      )
+                    else ...[
+                      ListTile(
+                        title: Text(
+                          games.signedIn
+                              ? (games.displayName ?? 'Signed in')
+                              : 'Not signed in',
+                        ),
+                        subtitle: games.error != null
+                            ? Text(games.error!)
+                            : const Text('Local profile stays authoritative'),
+                        trailing: TextButton(
+                          onPressed: () async {
+                            await games.signIn();
+                          },
+                          child: const Text('SIGN IN'),
+                        ),
                       ),
-                      subtitle: games.error != null
-                          ? Text(games.error!)
-                          : const Text('Local profile stays authoritative'),
-                      trailing: TextButton(
-                        onPressed: () async {
-                          await games.signIn();
-                        },
-                        child: const Text('SIGN IN'),
+                      OutlinedButton(
+                        onPressed: () => games.showLeaderboards(),
+                        child: const Text('LEADERBOARDS'),
                       ),
-                    ),
-                    OutlinedButton(
-                      onPressed: () => games.showLeaderboards(),
-                      child: const Text('LEADERBOARDS'),
-                    ),
+                    ],
                   ],
                   const SizedBox(height: 12),
                   Text(

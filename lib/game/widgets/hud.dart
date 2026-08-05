@@ -197,11 +197,13 @@ class JudgementLine extends StatelessWidget {
     required this.judgement,
     required this.deltaMs,
     required this.judgementToken,
+    this.precisionMode = false,
   });
 
   final Judgement? judgement;
   final int deltaMs;
   final int judgementToken;
+  final bool precisionMode;
 
   @override
   Widget build(BuildContext context) {
@@ -210,7 +212,8 @@ class JudgementLine extends StatelessWidget {
     final v = context.vault;
     final (label, color) = switch (judgement!) {
       Judgement.perfect => ('PERFECT', v.cyan),
-      Judgement.good => ('GOOD', v.gold),
+      Judgement.good =>
+        precisionMode ? ('BREAK', v.paper.withValues(alpha: 0.45)) : ('GOOD', v.gold),
       Judgement.miss => ('MISS', v.missRed),
     };
 
@@ -236,7 +239,8 @@ class JudgementLine extends StatelessWidget {
                 ],
               ),
             ),
-            if (judgement != Judgement.miss) ...[
+            if (judgement == Judgement.perfect ||
+                (judgement == Judgement.good && !precisionMode)) ...[
               const SizedBox(width: 8),
               Text(
                 '${deltaMs > 0 ? '+' : ''}$deltaMs MS',
@@ -250,6 +254,62 @@ class JudgementLine extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Hearts / loop / precision cue for mode personality.
+class ModeStatusRow extends StatelessWidget {
+  const ModeStatusRow({
+    super.key,
+    this.lives,
+    this.maxLives,
+    this.loop,
+    this.precision = false,
+  });
+
+  final int? lives;
+  final int? maxLives;
+  final int? loop;
+  final bool precision;
+
+  @override
+  Widget build(BuildContext context) {
+    final v = context.vault;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        if (lives != null && maxLives != null)
+          Row(
+            children: [
+              for (var i = 0; i < maxLives!; i++)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  child: Text(
+                    '♥',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: i < lives!
+                          ? v.magenta
+                          : v.paper.withValues(alpha: 0.2),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        if (loop != null) ...[
+          if (lives != null) const SizedBox(width: 14),
+          Text(
+            'LOOP $loop · windows tighten',
+            style: vaultLabel(size: 11, color: v.cyan),
+          ),
+        ],
+        if (precision && lives == null && loop == null)
+          Text(
+            'PERFECT ONLY',
+            style: vaultLabel(size: 11, color: v.gold),
+          ),
+      ],
     );
   }
 }

@@ -28,6 +28,7 @@ class RoadToGloryController extends ChangeNotifier {
   int _gridIndex = 0;
   int _baseBatchSize = initialBaseBatch;
   int _batchSize = initialBaseBatch;
+  int _boardsCleared = 0;
   final Set<int> _popped = {};
   final Set<int> _activeBatch = {};
   RoadPhase _phase = RoadPhase.playing;
@@ -39,6 +40,7 @@ class RoadToGloryController extends ChangeNotifier {
   int get batchSize => _batchSize;
   int get baseBatchSize => _baseBatchSize;
   int get gridIndex => _gridIndex;
+  int get boardsCleared => _boardsCleared;
   String get gridLabel => grids[_gridIndex].label;
   Set<int> get popped => _popped;
   Set<int> get activeBatch => _activeBatch;
@@ -51,6 +53,7 @@ class RoadToGloryController extends ChangeNotifier {
     _gridIndex = 0;
     _baseBatchSize = initialBaseBatch;
     _batchSize = _baseBatchSize;
+    _boardsCleared = 0;
     _restartBoard(deal: true);
   }
 
@@ -114,6 +117,7 @@ class RoadToGloryController extends ChangeNotifier {
 
   void _onBoardCleared() {
     _phase = RoadPhase.stageClear;
+    _boardsCleared += 1;
 
     if (_batchSize >= enlargeAt && _gridIndex < grids.length - 1) {
       _gridIndex += 1;

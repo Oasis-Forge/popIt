@@ -15,6 +15,8 @@ class PopItBoard extends StatelessWidget {
     required this.onBubbleTap,
     this.dimIdle = true,
     this.boardScale = BoardScale.standard,
+    this.cueProgressFor,
+    this.precisionMode = false,
   });
 
   final int rows;
@@ -23,6 +25,8 @@ class PopItBoard extends StatelessWidget {
   final void Function(int bubbleId) onBubbleTap;
   final bool dimIdle;
   final BoardScale boardScale;
+  final double? Function(int bubbleId)? cueProgressFor;
+  final bool precisionMode;
 
   @override
   Widget build(BuildContext context) {
@@ -76,6 +80,8 @@ class PopItBoard extends StatelessWidget {
                               state: stateForBubble(r * cols + c),
                               onTap: () => onBubbleTap(r * cols + c),
                               dimIdle: dimIdle,
+                              cueProgress: cueProgressFor?.call(r * cols + c),
+                              precisionMode: precisionMode,
                             ),
                           ),
                         ),

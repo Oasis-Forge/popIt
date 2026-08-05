@@ -16,6 +16,8 @@ class VersusPlayerState {
     this.displayName = 'You',
     this.isBot = false,
     this.isLocal = false,
+    this.botSkill = 0.8,
+    this.botPointsPerSec = 220,
   });
 
   int score;
@@ -26,6 +28,12 @@ class VersusPlayerState {
   String displayName;
   bool isBot;
   bool isLocal;
+
+  /// 0.55–1.05: how close the bot stays to its own target pace.
+  double botSkill;
+
+  /// Independent scoring pace (not derived from the local player).
+  double botPointsPerSec;
 }
 
 /// Versus rooms. Bots work locally; friends reserved for Firebase later.
@@ -95,12 +103,16 @@ class VersusService extends ChangeNotifier {
     if (kind == VersusMatchKind.bots) {
       final botCount = count - 1;
       final names = [..._botNames]..shuffle(_random);
+      // Spread skill so someone can beat a sloppy player.
+      final skills = <double>[0.62, 0.78, 0.92, 1.05]..shuffle(_random);
       for (var i = 0; i < botCount; i++) {
         players.add(
           VersusPlayerState(
             displayName: names[i % names.length],
             isBot: true,
             state: 'ready',
+            botSkill: skills[i % skills.length],
+            botPointsPerSec: 160 + _random.nextDouble() * 140,
           ),
         );
       }
@@ -179,15 +191,17 @@ class VersusService extends ChangeNotifier {
       ..posMs = posMs
       ..state = state;
 
-    // Simulate bots drifting under the local score for polish.
-    for (var i = 0; i < rivals.length; i++) {
-      final bot = rivals[i];
+    // Independent bot pace — can lead or trail the player.
+    for (final bot in rivals) {
       if (!bot.isBot) continue;
-      final factor = 0.78 + (i * 0.07) + (_random.nextDouble() * 0.06);
+      final secs = posMs / 1000.0;
+      final wobble = (_random.nextDouble() - 0.5) * 28;
+      final target =
+          (secs * bot.botPointsPerSec * bot.botSkill + wobble).round();
       bot
-        ..score = (score * factor).round()
-        ..combo = combo > i ? combo - (i + 1) : 0
-        ..accuracy = (accuracy * (0.88 + i * 0.03)).clamp(0, 1)
+        ..score = target.clamp(0, 999999)
+        ..combo = (bot.botSkill * 40 + _random.nextInt(8)).round()
+        ..accuracy = (0.72 + bot.botSkill * 0.25).clamp(0.0, 1.0)
         ..posMs = posMs
         ..state = state;
     }

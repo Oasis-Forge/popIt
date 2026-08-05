@@ -80,9 +80,7 @@ class RhythmController extends ChangeNotifier {
     }
     _positionMs = localPos;
     position.value = positionMs;
-    final beforeCues = Set<int>.from(_cuedBubbleIds);
     _refreshCues();
-    final missesBefore = _missCount;
     _autoMissExpired();
     final chartDone = !_rules.loops &&
         positionMs >= duration &&
@@ -94,10 +92,31 @@ class RhythmController extends ChangeNotifier {
         )) {
       _finished = true;
     }
-    final cuesChanged = !setEquals(beforeCues, _cuedBubbleIds);
-    if (cuesChanged || _missCount != missesBefore || _finished) {
-      notifyListeners();
+    // Keep HUD / approach rings live on the audio clock.
+    notifyListeners();
+  }
+
+  /// 0 → just lit, 1 → on the beat. Null if bubble is not cued.
+  double? cueProgressFor(int bubbleId) {
+    final t = timing;
+    Note? nearest;
+    var bestAbs = 1 << 30;
+    for (final note in _pending) {
+      if (note.bubbleId != bubbleId) continue;
+      final start = note.tMs - t.cueLeadMs;
+      final end = note.tMs + t.goodWindowMs;
+      if (_positionMs < start || _positionMs >= end) continue;
+      final abs = (_positionMs - note.tMs).abs();
+      if (abs < bestAbs) {
+        bestAbs = abs;
+        nearest = note;
+      }
     }
+    if (nearest == null) return null;
+    final lead = t.cueLeadMs;
+    if (lead <= 0) return 1;
+    final elapsed = (_positionMs - (nearest.tMs - lead)).clamp(0, lead);
+    return (elapsed / lead).clamp(0.0, 1.0);
   }
 
   HitResult? onBubbleTapped(int bubbleId) {

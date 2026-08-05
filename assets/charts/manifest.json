@@ -1,6 +1,15 @@
 {
   "charts": [
     {
+      "id": "coach_intro",
+      "title": "Coach Intro",
+      "artist": "Pop It",
+      "bpm": 120,
+      "durationMs": 16000,
+      "audioAsset": "assets/audio/demo_beat.wav",
+      "chartAsset": "assets/charts/coach_intro.json"
+    },
+    {
       "id": "demo_beat",
       "title": "Demo Beat",
       "artist": "Pop It",

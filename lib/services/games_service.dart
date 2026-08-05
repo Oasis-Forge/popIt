@@ -7,17 +7,19 @@ class GamesService extends ChangeNotifier {
   String? displayName;
   String? error;
 
+  /// Flip when `games-ids.xml` has a real APP_ID and `games_services` is wired.
+  bool get isConfigured => false;
+
   bool get isAndroid =>
       !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
   Future<void> silentSignIn() async {
-    if (!isAndroid) {
+    if (!isAndroid || !isConfigured) {
       signedIn = false;
       notifyListeners();
       return;
     }
     try {
-      // Deferred until Play Console APP_ID is configured.
       signedIn = false;
       playerId = null;
       displayName = null;
@@ -32,6 +34,11 @@ class GamesService extends ChangeNotifier {
   Future<bool> signIn() async {
     if (!isAndroid) {
       error = 'Google Play Games is Android-only.';
+      notifyListeners();
+      return false;
+    }
+    if (!isConfigured) {
+      error = null;
       notifyListeners();
       return false;
     }
@@ -66,8 +73,8 @@ class GamesService extends ChangeNotifier {
   Future<void> unlockAchievement(String id) async {}
 
   Future<void> showLeaderboards() async {
-    if (!isAndroid) {
-      error = 'Leaderboards require Android + Play Games.';
+    if (!isAndroid || !isConfigured) {
+      error = null;
       notifyListeners();
     }
   }

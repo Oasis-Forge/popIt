@@ -57,6 +57,10 @@ class PlayerProfile extends ChangeNotifier {
     this.streakCurrent = 0,
     this.streakBest = 0,
     this.lastPlayedYmd = '',
+    this.dailyCompletedYmd = '',
+    this.coachCompleted = false,
+    this.roadBestStage = 0,
+    this.roadBestCleared = 0,
     Set<String>? unlockedThemeIds,
     List<Map<String, dynamic>>? pendingLeaderboardSubmissions,
   })  : bests = bests ?? {},
@@ -71,11 +75,17 @@ class PlayerProfile extends ChangeNotifier {
   int streakCurrent;
   int streakBest;
   String lastPlayedYmd;
+  String dailyCompletedYmd;
+  bool coachCompleted;
+  int roadBestStage;
+  int roadBestCleared;
   final Set<String> unlockedThemeIds;
   final List<Map<String, dynamic>> pendingLeaderboardSubmissions;
 
+  bool hasPlayedDaily(String ymd) => dailyCompletedYmd == ymd;
+
   Map<String, dynamic> toJson() => {
-        'schemaVersion': 1,
+        'schemaVersion': 2,
         'bests': bests.map((k, v) => MapEntry(k, v.toJson())),
         'totals': {
           'runs': runs,
@@ -88,6 +98,12 @@ class PlayerProfile extends ChangeNotifier {
           'best': streakBest,
           'lastPlayedYmd': lastPlayedYmd,
         },
+        'dailyCompletedYmd': dailyCompletedYmd,
+        'coachCompleted': coachCompleted,
+        'road': {
+          'bestStage': roadBestStage,
+          'bestCleared': roadBestCleared,
+        },
         'unlockedThemeIds': unlockedThemeIds.toList(),
         'pendingLeaderboardSubmissions': pendingLeaderboardSubmissions,
       };
@@ -96,6 +112,7 @@ class PlayerProfile extends ChangeNotifier {
     final bestsRaw = json['bests'] as Map<String, dynamic>? ?? {};
     final totals = json['totals'] as Map<String, dynamic>? ?? {};
     final streak = json['streak'] as Map<String, dynamic>? ?? {};
+    final road = json['road'] as Map<String, dynamic>? ?? {};
     return PlayerProfile(
       bests: bestsRaw.map(
         (k, v) => MapEntry(k, RunBest.fromJson(v as Map<String, dynamic>)),
@@ -107,9 +124,14 @@ class PlayerProfile extends ChangeNotifier {
       streakCurrent: streak['current'] as int? ?? 0,
       streakBest: streak['best'] as int? ?? 0,
       lastPlayedYmd: streak['lastPlayedYmd'] as String? ?? '',
+      dailyCompletedYmd: json['dailyCompletedYmd'] as String? ?? '',
+      coachCompleted: json['coachCompleted'] as bool? ?? false,
+      roadBestStage: road['bestStage'] as int? ?? 0,
+      roadBestCleared: road['bestCleared'] as int? ?? 0,
       unlockedThemeIds: {
         ...(json['unlockedThemeIds'] as List<dynamic>? ?? ['disco_vault'])
             .cast<String>(),
+        'neon_arcade', // free starter for older profiles
       },
       pendingLeaderboardSubmissions:
           (json['pendingLeaderboardSubmissions'] as List<dynamic>? ?? [])
@@ -117,12 +139,14 @@ class PlayerProfile extends ChangeNotifier {
     );
   }
 
-  void recordRun({
+  /// Returns true if this run set a new personal best for [key].
+  bool recordRun({
     required String key,
     required RunBest best,
   }) {
     final prev = bests[key];
-    if (prev == null || best.score > prev.score) {
+    final isNewBest = prev == null || best.score > prev.score;
+    if (isNewBest) {
       bests[key] = best;
     }
     runs += 1;
@@ -131,6 +155,35 @@ class PlayerProfile extends ChangeNotifier {
     if (best.maxCombo > longestCombo) longestCombo = best.maxCombo;
     _touchStreak();
     notifyListeners();
+    return isNewBest;
+  }
+
+  void markDailyCompleted(String ymd) {
+    if (dailyCompletedYmd == ymd) return;
+    dailyCompletedYmd = ymd;
+    notifyListeners();
+  }
+
+  void markCoachCompleted() {
+    if (coachCompleted) return;
+    coachCompleted = true;
+    notifyListeners();
+  }
+
+  void recordRoadProgress({required int stageIndex, required int cleared}) {
+    var changed = false;
+    if (stageIndex > roadBestStage) {
+      roadBestStage = stageIndex;
+      changed = true;
+    }
+    if (cleared > roadBestCleared) {
+      roadBestCleared = cleared;
+      changed = true;
+    }
+    if (changed) {
+      _touchStreak();
+      notifyListeners();
+    }
   }
 
   void unlockTheme(String id) {

@@ -3,110 +3,54 @@
   "audioAsset": "assets/audio/velvet_groove.wav",
   "durationMs": 33600,
   "notes": [
-    {
-      "tMs": 1200,
-      "bubbleId": 18,
-      "weight": 2
-    },
-    {
-      "tMs": 3000,
-      "bubbleId": 10,
-      "weight": 2
-    },
-    {
-      "tMs": 4800,
-      "bubbleId": 11,
-      "weight": 1
-    },
-    {
-      "tMs": 6000,
-      "bubbleId": 9,
-      "weight": 2
-    },
-    {
-      "tMs": 7800,
-      "bubbleId": 18,
-      "weight": 2
-    },
-    {
-      "tMs": 9600,
-      "bubbleId": 17,
-      "weight": 1
-    },
-    {
-      "tMs": 11400,
-      "bubbleId": 19,
-      "weight": 2
-    },
-    {
-      "tMs": 13200,
-      "bubbleId": 3,
-      "weight": 2
-    },
-    {
-      "tMs": 14400,
-      "bubbleId": 9,
-      "weight": 1
-    },
-    {
-      "tMs": 16200,
-      "bubbleId": 4,
-      "weight": 2
-    },
-    {
-      "tMs": 17400,
-      "bubbleId": 10,
-      "weight": 2
-    },
-    {
-      "tMs": 19200,
-      "bubbleId": 9,
-      "weight": 1
-    },
-    {
-      "tMs": 21000,
-      "bubbleId": 19,
-      "weight": 2
-    },
-    {
-      "tMs": 22200,
-      "bubbleId": 9,
-      "weight": 2
-    },
-    {
-      "tMs": 24000,
-      "bubbleId": 1,
-      "weight": 1
-    },
-    {
-      "tMs": 25800,
-      "bubbleId": 15,
-      "weight": 2
-    },
-    {
-      "tMs": 27000,
-      "bubbleId": 16,
-      "weight": 2
-    },
-    {
-      "tMs": 28800,
-      "bubbleId": 14,
-      "weight": 1
-    },
-    {
-      "tMs": 30000,
-      "bubbleId": 3,
-      "weight": 2
-    },
-    {
-      "tMs": 31200,
-      "bubbleId": 9,
-      "weight": 1
-    },
-    {
-      "tMs": 32400,
-      "bubbleId": 15,
-      "weight": 2
-    }
+    { "tMs": 1200, "bubbleId": 9, "weight": 1 },
+    { "tMs": 1800, "bubbleId": 2, "weight": 2 },
+    { "tMs": 2400, "bubbleId": 14, "weight": 1 },
+    { "tMs": 3000, "bubbleId": 6, "weight": 2 },
+    { "tMs": 3600, "bubbleId": 18, "weight": 1 },
+    { "tMs": 3600, "bubbleId": 1, "weight": 3 },
+    { "tMs": 4800, "bubbleId": 11, "weight": 1 },
+    { "tMs": 5400, "bubbleId": 4, "weight": 2 },
+    { "tMs": 6000, "bubbleId": 16, "weight": 1 },
+    { "tMs": 6600, "bubbleId": 7, "weight": 2 },
+    { "tMs": 7200, "bubbleId": 0, "weight": 1 },
+    { "tMs": 8400, "bubbleId": 13, "weight": 1 },
+    { "tMs": 9000, "bubbleId": 19, "weight": 2 },
+    { "tMs": 9600, "bubbleId": 5, "weight": 1 },
+    { "tMs": 10200, "bubbleId": 10, "weight": 2 },
+    { "tMs": 10800, "bubbleId": 3, "weight": 1 },
+    { "tMs": 10800, "bubbleId": 15, "weight": 3 },
+    { "tMs": 12000, "bubbleId": 8, "weight": 1 },
+    { "tMs": 12600, "bubbleId": 17, "weight": 2 },
+    { "tMs": 13200, "bubbleId": 12, "weight": 1 },
+    { "tMs": 14400, "bubbleId": 9, "weight": 1 },
+    { "tMs": 15000, "bubbleId": 2, "weight": 2 },
+    { "tMs": 15600, "bubbleId": 14, "weight": 1 },
+    { "tMs": 16200, "bubbleId": 6, "weight": 2 },
+    { "tMs": 16800, "bubbleId": 18, "weight": 1 },
+    { "tMs": 16800, "bubbleId": 1, "weight": 3 },
+    { "tMs": 18000, "bubbleId": 11, "weight": 1 },
+    { "tMs": 18600, "bubbleId": 4, "weight": 2 },
+    { "tMs": 19200, "bubbleId": 16, "weight": 1 },
+    { "tMs": 20400, "bubbleId": 7, "weight": 1 },
+    { "tMs": 21000, "bubbleId": 0, "weight": 2 },
+    { "tMs": 21600, "bubbleId": 13, "weight": 1 },
+    { "tMs": 22200, "bubbleId": 19, "weight": 2 },
+    { "tMs": 22800, "bubbleId": 5, "weight": 1 },
+    { "tMs": 22800, "bubbleId": 10, "weight": 3 },
+    { "tMs": 24000, "bubbleId": 3, "weight": 1 },
+    { "tMs": 24600, "bubbleId": 15, "weight": 2 },
+    { "tMs": 25200, "bubbleId": 8, "weight": 1 },
+    { "tMs": 26400, "bubbleId": 17, "weight": 1 },
+    { "tMs": 27000, "bubbleId": 12, "weight": 2 },
+    { "tMs": 27600, "bubbleId": 9, "weight": 1 },
+    { "tMs": 28200, "bubbleId": 2, "weight": 2 },
+    { "tMs": 28800, "bubbleId": 14, "weight": 1 },
+    { "tMs": 28800, "bubbleId": 6, "weight": 3 },
+    { "tMs": 30000, "bubbleId": 18, "weight": 1 },
+    { "tMs": 30600, "bubbleId": 1, "weight": 2 },
+    { "tMs": 31200, "bubbleId": 11, "weight": 1 },
+    { "tMs": 31800, "bubbleId": 4, "weight": 2 },
+    { "tMs": 32400, "bubbleId": 16, "weight": 1 }
   ]
 }

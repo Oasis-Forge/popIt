@@ -84,6 +84,11 @@ class _RoadToGloryScreenState extends State<RoadToGloryScreen> {
   }
 
   Future<void> _showFailModal() async {
+    final services = AppScope.maybeOf(context);
+    services?.profile.recordRoadProgress(
+      stageIndex: _game.gridIndex,
+      cleared: _game.boardsCleared,
+    );
     await showModalBottomSheet<void>(
       context: context,
       isDismissible: false,
@@ -110,6 +115,12 @@ class _RoadToGloryScreenState extends State<RoadToGloryScreen> {
               Text(
                 'MISSED',
                 style: vaultDisplay(size: 34, color: v.missRed),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Cleared ${_game.boardsCleared} · Stage ${_game.gridIndex + 1} (${_game.gridLabel})',
+                textAlign: TextAlign.center,
+                style: vaultLabel(size: 13, color: v.gold),
               ),
               const SizedBox(height: 8),
               Text(

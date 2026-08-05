@@ -15,7 +15,9 @@ List<Note> applyDensity(List<Note> master, DensityProfile profile) {
 
   final out = <Note>[];
   for (final note in kept) {
-    if (out.isEmpty || note.tMs - out.last.tMs >= profile.minGapMs) {
+    if (out.isEmpty ||
+        note.tMs == out.last.tMs ||
+        note.tMs - out.last.tMs >= profile.minGapMs) {
       out.add(note.copyWith(id: out.length));
     }
   }

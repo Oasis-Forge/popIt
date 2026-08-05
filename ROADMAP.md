@@ -263,9 +263,12 @@ P0 → P5 (signing SHA-1 + INTERNET). P1 → everything. P3 → P4 (rules need i
 
 ## Open items
 
-- **Content is the real bottleneck for Phase 3+.** Song select needs 2–3 more tracks to feel like a game rather than a demo. `tools/gen_audio.dart` synthesises the current beat; more interesting tracks need either authored audio or licensed music.
-- **Firebase (P6) triggers Play Console Data safety disclosure** and adds four plugins plus APK weight.
-- **iOS is deferred throughout** — GPGS maps to Game Center, which is unimplemented; the bundle id fix in P0 keeps that door open.
+- **Play Console + GPGS** — real APP_ID in `games-ids.xml`, `games_services` package, OAuth SHA-1s, leaderboard/achievement IDs. Settings soft-gates until `GamesService.isConfigured`.
+- **Firebase friends versus** — RTDB + anonymous auth; lobby friends CTA stays grayed until then.
+- **Licensed / authored music** — synth pack remains playable; broader appeal needs real tracks beyond `tools/gen_audio.dart`.
+- **iOS Game Center** — deferred; bundle id is ready.
+
+Local interest sprint (results PBs, combo juice, real Daily, mode HUD, coach, bot skill, chart craft, image share) is implemented offline-first.
 
 ---
 

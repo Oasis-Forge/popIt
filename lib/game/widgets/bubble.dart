@@ -20,6 +20,8 @@ class PopBubble extends StatefulWidget {
     required this.state,
     required this.onTap,
     this.dimIdle = true,
+    this.cueProgress,
+    this.precisionMode = false,
   });
 
   final int bubbleId;
@@ -29,6 +31,10 @@ class PopBubble extends StatefulWidget {
   final BubbleVisualState state;
   final VoidCallback onTap;
   final bool dimIdle;
+
+  /// 0 → cue start, 1 → on the beat. Drives approach ring when cued.
+  final double? cueProgress;
+  final bool precisionMode;
 
   @override
   State<PopBubble> createState() => _PopBubbleState();
@@ -269,7 +275,7 @@ class _PopBubbleState extends State<PopBubble>
             ),
           ),
 
-          // Pulsing cue ring.
+          // Pulsing cue ring + approach fill toward the beat.
           if (cued)
             AnimatedBuilder(
               animation: _pulse,
@@ -281,17 +287,14 @@ class _PopBubbleState extends State<PopBubble>
                 widthFactor: 0.96,
                 child: AspectRatio(
                   aspectRatio: 1,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: palette.gold, width: 3),
-                      boxShadow: [
-                        BoxShadow(
-                          color: palette.gold.withValues(alpha: 0.75),
-                          blurRadius: 20,
-                          spreadRadius: 5,
-                        ),
-                      ],
+                  child: CustomPaint(
+                    painter: _CueRingPainter(
+                      progress: (widget.cueProgress ?? 0.5).clamp(0.0, 1.0),
+                      color: widget.precisionMode ? palette.gold : palette.gold,
+                      accent: widget.precisionMode
+                          ? palette.gold
+                          : palette.cyan,
+                      precision: widget.precisionMode,
                     ),
                   ),
                 ),
@@ -301,4 +304,63 @@ class _PopBubbleState extends State<PopBubble>
       ),
     );
   }
+}
+
+class _CueRingPainter extends CustomPainter {
+  _CueRingPainter({
+    required this.progress,
+    required this.color,
+    required this.accent,
+    required this.precision,
+  });
+
+  final double progress;
+  final Color color;
+  final Color accent;
+  final bool precision;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2 - 2;
+    final track = Paint()
+      ..color = color.withValues(alpha: 0.28)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = precision ? 3.5 : 3;
+    canvas.drawCircle(center, radius, track);
+
+    final sweep = progress * 6.283185307179586;
+    final arc = Paint()
+      ..color = accent
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = precision ? 4 : 3.2
+      ..strokeCap = StrokeCap.round;
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      -1.5707963267948966,
+      sweep,
+      false,
+      arc,
+    );
+
+    final glow = Paint()
+      ..color = accent.withValues(alpha: 0.55 + 0.35 * progress)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      -1.5707963267948966,
+      sweep,
+      false,
+      glow,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _CueRingPainter oldDelegate) =>
+      oldDelegate.progress != progress ||
+      oldDelegate.color != color ||
+      oldDelegate.accent != accent ||
+      oldDelegate.precision != precision;
 }

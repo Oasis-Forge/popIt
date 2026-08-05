@@ -1,0 +1,112 @@
+{
+  "title": "Velvet Groove",
+  "audioAsset": "assets/audio/velvet_groove.wav",
+  "durationMs": 33600,
+  "notes": [
+    {
+      "tMs": 1200,
+      "bubbleId": 18,
+      "weight": 2
+    },
+    {
+      "tMs": 3000,
+      "bubbleId": 10,
+      "weight": 2
+    },
+    {
+      "tMs": 4800,
+      "bubbleId": 11,
+      "weight": 1
+    },
+    {
+      "tMs": 6000,
+      "bubbleId": 9,
+      "weight": 2
+    },
+    {
+      "tMs": 7800,
+      "bubbleId": 18,
+      "weight": 2
+    },
+    {
+      "tMs": 9600,
+      "bubbleId": 17,
+      "weight": 1
+    },
+    {
+      "tMs": 11400,
+      "bubbleId": 19,
+      "weight": 2
+    },
+    {
+      "tMs": 13200,
+      "bubbleId": 3,
+      "weight": 2
+    },
+    {
+      "tMs": 14400,
+      "bubbleId": 9,
+      "weight": 1
+    },
+    {
+      "tMs": 16200,
+      "bubbleId": 4,
+      "weight": 2
+    },
+    {
+      "tMs": 17400,
+      "bubbleId": 10,
+      "weight": 2
+    },
+    {
+      "tMs": 19200,
+      "bubbleId": 9,
+      "weight": 1
+    },
+    {
+      "tMs": 21000,
+      "bubbleId": 19,
+      "weight": 2
+    },
+    {
+      "tMs": 22200,
+      "bubbleId": 9,
+      "weight": 2
+    },
+    {
+      "tMs": 24000,
+      "bubbleId": 1,
+      "weight": 1
+    },
+    {
+      "tMs": 25800,
+      "bubbleId": 15,
+      "weight": 2
+    },
+    {
+      "tMs": 27000,
+      "bubbleId": 16,
+      "weight": 2
+    },
+    {
+      "tMs": 28800,
+      "bubbleId": 14,
+      "weight": 1
+    },
+    {
+      "tMs": 30000,
+      "bubbleId": 3,
+      "weight": 2
+    },
+    {
+      "tMs": 31200,
+      "bubbleId": 9,
+      "weight": 1
+    },
+    {
+      "tMs": 32400,
+      "bubbleId": 15,
+      "weight": 2
+    }
+  ]
+}

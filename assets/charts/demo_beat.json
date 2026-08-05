@@ -1,0 +1,162 @@
+{
+  "title": "Demo Beat",
+  "audioAsset": "assets/audio/demo_beat.wav",
+  "durationMs": 32000,
+  "notes": [
+    {
+      "tMs": 1000,
+      "bubbleId": 17,
+      "weight": 2
+    },
+    {
+      "tMs": 2000,
+      "bubbleId": 10,
+      "weight": 1
+    },
+    {
+      "tMs": 3000,
+      "bubbleId": 0,
+      "weight": 2
+    },
+    {
+      "tMs": 4000,
+      "bubbleId": 15,
+      "weight": 1
+    },
+    {
+      "tMs": 5000,
+      "bubbleId": 12,
+      "weight": 2
+    },
+    {
+      "tMs": 6000,
+      "bubbleId": 5,
+      "weight": 1
+    },
+    {
+      "tMs": 7000,
+      "bubbleId": 0,
+      "weight": 2
+    },
+    {
+      "tMs": 8000,
+      "bubbleId": 1,
+      "weight": 1
+    },
+    {
+      "tMs": 9000,
+      "bubbleId": 15,
+      "weight": 2
+    },
+    {
+      "tMs": 10000,
+      "bubbleId": 11,
+      "weight": 1
+    },
+    {
+      "tMs": 11000,
+      "bubbleId": 6,
+      "weight": 2
+    },
+    {
+      "tMs": 12000,
+      "bubbleId": 13,
+      "weight": 1
+    },
+    {
+      "tMs": 13000,
+      "bubbleId": 18,
+      "weight": 2
+    },
+    {
+      "tMs": 14000,
+      "bubbleId": 14,
+      "weight": 1
+    },
+    {
+      "tMs": 15000,
+      "bubbleId": 15,
+      "weight": 2
+    },
+    {
+      "tMs": 16000,
+      "bubbleId": 12,
+      "weight": 1
+    },
+    {
+      "tMs": 17000,
+      "bubbleId": 3,
+      "weight": 2
+    },
+    {
+      "tMs": 18000,
+      "bubbleId": 10,
+      "weight": 1
+    },
+    {
+      "tMs": 19000,
+      "bubbleId": 14,
+      "weight": 2
+    },
+    {
+      "tMs": 20000,
+      "bubbleId": 1,
+      "weight": 1
+    },
+    {
+      "tMs": 21000,
+      "bubbleId": 15,
+      "weight": 2
+    },
+    {
+      "tMs": 22000,
+      "bubbleId": 12,
+      "weight": 1
+    },
+    {
+      "tMs": 23000,
+      "bubbleId": 0,
+      "weight": 2
+    },
+    {
+      "tMs": 24000,
+      "bubbleId": 6,
+      "weight": 1
+    },
+    {
+      "tMs": 25000,
+      "bubbleId": 13,
+      "weight": 2
+    },
+    {
+      "tMs": 26000,
+      "bubbleId": 16,
+      "weight": 1
+    },
+    {
+      "tMs": 27000,
+      "bubbleId": 4,
+      "weight": 2
+    },
+    {
+      "tMs": 28000,
+      "bubbleId": 9,
+      "weight": 1
+    },
+    {
+      "tMs": 29000,
+      "bubbleId": 16,
+      "weight": 2
+    },
+    {
+      "tMs": 30000,
+      "bubbleId": 15,
+      "weight": 1
+    },
+    {
+      "tMs": 31000,
+      "bubbleId": 1,
+      "weight": 2
+    }
+  ]
+}

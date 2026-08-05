@@ -103,20 +103,34 @@ class RhythmController extends ChangeNotifier {
   HitResult? onBubbleTapped(int bubbleId) {
     if (_finished) return null;
     final t = timing;
+    // Web/mobile audio clocks often lag a frame or two behind the tap.
+    const lateGraceMs = 40;
+    final hitWindow = t.goodWindowMs + lateGraceMs;
 
     Note? best;
     var bestAbs = 1 << 30;
+    Note? earlyNote;
+    var earlyDelta = 1 << 30; // how early (positive ms before note)
+
     for (final note in _pending) {
       if (note.bubbleId != bubbleId) continue;
-      final delta = _positionMs - note.tMs;
+      final delta = _positionMs - note.tMs; // negative = early
       final abs = delta.abs();
-      if (abs <= t.goodWindowMs && abs < bestAbs) {
+      if (abs <= hitWindow && abs < bestAbs) {
         best = note;
         bestAbs = abs;
+      } else if (delta < 0 && -delta <= t.cueLeadMs && -delta < earlyDelta) {
+        // Correct bubble is lit, but player tapped before the hit window.
+        earlyNote = note;
+        earlyDelta = -delta;
       }
     }
 
     if (best == null) {
+      if (earlyNote != null) {
+        // Too early on the right bubble — ignore, do not punish as a miss.
+        return null;
+      }
       _registerMiss(bubbleId: bubbleId, fromTap: true);
       _poppedBubbleIds.add(bubbleId);
       notifyListeners();
@@ -130,6 +144,7 @@ class RhythmController extends ChangeNotifier {
 
     final delta = _positionMs - best.tMs;
     final abs = delta.abs();
+    // Perfect uses the authored window; late grace only expands Good, not Perfect.
     var judgement =
         abs <= t.perfectWindowMs ? Judgement.perfect : Judgement.good;
     if (_rules.requirePerfect && judgement == Judgement.good) {

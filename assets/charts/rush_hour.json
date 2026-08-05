@@ -1,0 +1,237 @@
+{
+  "title": "Rush Hour",
+  "audioAsset": "assets/audio/rush_hour.wav",
+  "durationMs": 28800,
+  "notes": [
+    {
+      "tMs": 858,
+      "bubbleId": 0,
+      "weight": 3
+    },
+    {
+      "tMs": 1716,
+      "bubbleId": 19,
+      "weight": 1
+    },
+    {
+      "tMs": 2145,
+      "bubbleId": 4,
+      "weight": 2
+    },
+    {
+      "tMs": 3003,
+      "bubbleId": 15,
+      "weight": 2
+    },
+    {
+      "tMs": 3432,
+      "bubbleId": 4,
+      "weight": 1
+    },
+    {
+      "tMs": 3861,
+      "bubbleId": 16,
+      "weight": 2
+    },
+    {
+      "tMs": 4290,
+      "bubbleId": 9,
+      "weight": 2
+    },
+    {
+      "tMs": 4719,
+      "bubbleId": 12,
+      "weight": 2
+    },
+    {
+      "tMs": 5577,
+      "bubbleId": 18,
+      "weight": 3
+    },
+    {
+      "tMs": 6006,
+      "bubbleId": 6,
+      "weight": 3
+    },
+    {
+      "tMs": 6435,
+      "bubbleId": 3,
+      "weight": 2
+    },
+    {
+      "tMs": 6864,
+      "bubbleId": 0,
+      "weight": 1
+    },
+    {
+      "tMs": 7722,
+      "bubbleId": 11,
+      "weight": 2
+    },
+    {
+      "tMs": 8151,
+      "bubbleId": 5,
+      "weight": 2
+    },
+    {
+      "tMs": 9009,
+      "bubbleId": 9,
+      "weight": 3
+    },
+    {
+      "tMs": 9438,
+      "bubbleId": 13,
+      "weight": 3
+    },
+    {
+      "tMs": 9867,
+      "bubbleId": 5,
+      "weight": 3
+    },
+    {
+      "tMs": 10725,
+      "bubbleId": 7,
+      "weight": 2
+    },
+    {
+      "tMs": 11583,
+      "bubbleId": 0,
+      "weight": 2
+    },
+    {
+      "tMs": 12441,
+      "bubbleId": 3,
+      "weight": 3
+    },
+    {
+      "tMs": 12870,
+      "bubbleId": 6,
+      "weight": 2
+    },
+    {
+      "tMs": 13728,
+      "bubbleId": 1,
+      "weight": 1
+    },
+    {
+      "tMs": 14157,
+      "bubbleId": 18,
+      "weight": 3
+    },
+    {
+      "tMs": 14586,
+      "bubbleId": 8,
+      "weight": 2
+    },
+    {
+      "tMs": 15444,
+      "bubbleId": 19,
+      "weight": 1
+    },
+    {
+      "tMs": 15873,
+      "bubbleId": 3,
+      "weight": 3
+    },
+    {
+      "tMs": 16302,
+      "bubbleId": 13,
+      "weight": 3
+    },
+    {
+      "tMs": 16731,
+      "bubbleId": 11,
+      "weight": 3
+    },
+    {
+      "tMs": 17589,
+      "bubbleId": 2,
+      "weight": 2
+    },
+    {
+      "tMs": 18018,
+      "bubbleId": 9,
+      "weight": 2
+    },
+    {
+      "tMs": 18447,
+      "bubbleId": 3,
+      "weight": 2
+    },
+    {
+      "tMs": 18876,
+      "bubbleId": 17,
+      "weight": 1
+    },
+    {
+      "tMs": 19305,
+      "bubbleId": 8,
+      "weight": 3
+    },
+    {
+      "tMs": 19734,
+      "bubbleId": 1,
+      "weight": 2
+    },
+    {
+      "tMs": 20592,
+      "bubbleId": 6,
+      "weight": 1
+    },
+    {
+      "tMs": 21450,
+      "bubbleId": 8,
+      "weight": 3
+    },
+    {
+      "tMs": 22308,
+      "bubbleId": 14,
+      "weight": 1
+    },
+    {
+      "tMs": 23166,
+      "bubbleId": 10,
+      "weight": 2
+    },
+    {
+      "tMs": 23595,
+      "bubbleId": 17,
+      "weight": 2
+    },
+    {
+      "tMs": 24453,
+      "bubbleId": 18,
+      "weight": 3
+    },
+    {
+      "tMs": 25311,
+      "bubbleId": 7,
+      "weight": 2
+    },
+    {
+      "tMs": 25740,
+      "bubbleId": 14,
+      "weight": 1
+    },
+    {
+      "tMs": 26598,
+      "bubbleId": 4,
+      "weight": 3
+    },
+    {
+      "tMs": 27027,
+      "bubbleId": 19,
+      "weight": 3
+    },
+    {
+      "tMs": 27885,
+      "bubbleId": 4,
+      "weight": 2
+    },
+    {
+      "tMs": 28314,
+      "bubbleId": 17,
+      "weight": 2
+    }
+  ]
+}

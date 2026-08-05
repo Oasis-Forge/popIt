@@ -84,7 +84,12 @@ class _GameScreenState extends State<GameScreen> {
         popSfxAsset: 'assets/audio/pop.wav',
         loseSfxAsset: 'assets/audio/lose.wav',
       );
-      await _audio.setSfxVolume(services.settings.sfxVolume);
+      await _audio.applyMix(
+        musicVolume: services.settings.musicVolume,
+        sfxVolume: services.settings.sfxVolume,
+        musicMuted: services.settings.musicMuted,
+        sfxMuted: services.settings.sfxMuted,
+      );
       await _audio.setLoopOne(rules.loops);
       if (!mounted) return;
       setState(() {
@@ -244,13 +249,16 @@ class _GameScreenState extends State<GameScreen> {
     if (result.judgement == Judgement.perfect ||
         result.judgement == Judgement.good) {
       if (haptics) HapticFeedback.lightImpact();
-      _audio.playPop();
-      // Combo juice on decade milestones.
+      _audio.playHitTone(
+        combo: rhythm.combo,
+        perfect: result.judgement == Judgement.perfect,
+      );
       if (rhythm.combo > 0 && rhythm.combo % 10 == 0 && haptics) {
         HapticFeedback.mediumImpact();
       }
     } else {
       if (haptics) HapticFeedback.heavyImpact();
+      _audio.playLose();
     }
   }
 

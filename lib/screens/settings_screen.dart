@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app/app_scope.dart';
+import '../game/chart_library.dart';
 import '../services/settings_controller.dart';
 import '../theme/game_theme.dart';
 import '../theme/vault_palette.dart';
@@ -23,6 +24,11 @@ class SettingsScreen extends StatelessWidget {
         final s = services.settings;
         final profile = services.profile;
         final games = services.gamesService;
+        final charts = services.chartLibrary.charts;
+        final selectedChart = charts.any((c) => c.id == s.lastChartId)
+            ? s.lastChartId
+            : charts.first.id;
+
         return Scaffold(
           body: DecoratedBox(
             decoration: BoxDecoration(gradient: v.roomGradient),
@@ -82,6 +88,80 @@ class SettingsScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 20),
+                  Text('Sound', style: vaultDisplay(size: 18)),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<String>(
+                    initialValue: selectedChart,
+                    dropdownColor: v.plateMid,
+                    decoration: const InputDecoration(
+                      labelText: 'Track',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: [
+                      for (final c in charts)
+                        DropdownMenuItem(
+                          value: c.id,
+                          child: Text('${c.title} · ${c.bpm} BPM'),
+                        ),
+                    ],
+                    onChanged: (id) {
+                      if (id != null) {
+                        s.update((x) => x.lastChartId = id);
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _trackBlurb(services.chartLibrary.byId(selectedChart)),
+                    style: vaultLabel(
+                      size: 10,
+                      color: v.paper.withValues(alpha: 0.45),
+                      weight: FontWeight.w400,
+                    ),
+                  ),
+                  SwitchListTile(
+                    title: const Text('Mute music'),
+                    value: s.musicMuted,
+                    onChanged: (val) => s.update((x) => x.musicMuted = val),
+                  ),
+                  ListTile(
+                    title: Text(
+                      'Music volume ${(s.musicVolume * 100).round()}%',
+                    ),
+                    subtitle: Slider(
+                      value: s.musicVolume,
+                      onChanged: s.musicMuted
+                          ? null
+                          : (val) => s.update((x) => x.musicVolume = val),
+                    ),
+                  ),
+                  SwitchListTile(
+                    title: const Text('Mute SFX'),
+                    value: s.sfxMuted,
+                    onChanged: (val) => s.update((x) => x.sfxMuted = val),
+                  ),
+                  ListTile(
+                    title: Text('SFX volume ${(s.sfxVolume * 100).round()}%'),
+                    subtitle: Slider(
+                      value: s.sfxVolume,
+                      onChanged: s.sfxMuted
+                          ? null
+                          : (val) => s.update((x) => x.sfxVolume = val),
+                    ),
+                  ),
+                  ListTile(
+                    title: Text('Audio offset ${s.audioOffsetMs} ms'),
+                    subtitle: const Text('Tap Calibration to measure'),
+                    trailing: const Icon(Icons.tune),
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const CalibrationScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 12),
                   Text('Board scale', style: vaultDisplay(size: 18)),
                   for (final scale in BoardScale.values)
                     ListTile(
@@ -107,25 +187,6 @@ class SettingsScreen extends StatelessWidget {
                     subtitle: const Text('Smaller comfort grid for rhythm'),
                     value: s.casualBoard,
                     onChanged: (val) => s.update((x) => x.casualBoard = val),
-                  ),
-                  ListTile(
-                    title: Text('SFX volume ${(s.sfxVolume * 100).round()}%'),
-                    subtitle: Slider(
-                      value: s.sfxVolume,
-                      onChanged: (val) => s.update((x) => x.sfxVolume = val),
-                    ),
-                  ),
-                  ListTile(
-                    title: Text('Audio offset ${s.audioOffsetMs} ms'),
-                    subtitle: const Text('Tap Calibration to measure'),
-                    trailing: const Icon(Icons.tune),
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => const CalibrationScreen(),
-                        ),
-                      );
-                    },
                   ),
                   if (games.isAndroid) ...[
                     const SizedBox(height: 12),
@@ -167,4 +228,7 @@ class SettingsScreen extends StatelessWidget {
       },
     );
   }
+
+  static String _trackBlurb(ChartMeta c) =>
+      '${c.artist} · ${(c.durationMs / 1000).round()}s';
 }

@@ -39,7 +39,12 @@ class _RoadToGloryScreenState extends State<RoadToGloryScreen> {
       if (!mounted) return;
       final settings = AppScope.maybeOf(context)?.settings;
       if (settings != null) {
-        await _audio.setSfxVolume(settings.sfxVolume);
+        await _audio.applyMix(
+          musicVolume: settings.musicVolume,
+          sfxVolume: settings.sfxVolume,
+          musicMuted: settings.musicMuted,
+          sfxMuted: settings.sfxMuted,
+        );
       }
       _game.start();
       _game.addListener(_onGameChanged);
@@ -159,9 +164,13 @@ class _RoadToGloryScreenState extends State<RoadToGloryScreen> {
         AppScope.maybeOf(context)?.settings.hapticsEnabled ?? true;
     if (ok) {
       if (haptics) HapticFeedback.lightImpact();
-      _audio.playPop();
+      _audio.playHitTone(
+        combo: _game.popped.length.clamp(1, 999),
+        perfect: true,
+      );
     } else {
       if (haptics) HapticFeedback.heavyImpact();
+      _audio.playLose();
     }
   }
 

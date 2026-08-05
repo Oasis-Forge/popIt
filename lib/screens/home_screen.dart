@@ -42,6 +42,11 @@ class _HomeScreenState extends State<HomeScreen>
       (m) => m.name == services.settings.lastMode,
       orElse: () => GameMode.classic,
     );
+    String chartId = services.settings.lastChartId;
+    final charts = services.chartLibrary.charts;
+    if (!charts.any((c) => c.id == chartId) && charts.isNotEmpty) {
+      chartId = charts.first.id;
+    }
 
     final config = await showModalBottomSheet<RunConfig>(
       context: context,
@@ -53,7 +58,8 @@ class _HomeScreenState extends State<HomeScreen>
           builder: (context, setSheet) {
             return Container(
               decoration: BoxDecoration(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(28)),
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
@@ -80,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Difficulty and mode only apply to Rhythm.',
+                    'Track, difficulty, and mode for this run.',
                     textAlign: TextAlign.center,
                     style: vaultLabel(
                       size: 10,
@@ -89,6 +95,25 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                   ),
                   const SizedBox(height: 18),
+                  DropdownButtonFormField<String>(
+                    initialValue: chartId,
+                    dropdownColor: v.plateMid,
+                    decoration: const InputDecoration(
+                      labelText: 'Track',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: [
+                      for (final c in charts)
+                        DropdownMenuItem(
+                          value: c.id,
+                          child: Text('${c.title} · ${c.bpm} BPM'),
+                        ),
+                    ],
+                    onChanged: (id) {
+                      if (id != null) setSheet(() => chartId = id);
+                    },
+                  ),
+                  const SizedBox(height: 12),
                   DropdownButtonFormField<Difficulty>(
                     initialValue: difficulty,
                     dropdownColor: v.plateMid,
@@ -130,7 +155,7 @@ class _HomeScreenState extends State<HomeScreen>
                     onPressed: () {
                       Navigator.of(context).pop(
                         RunConfig(
-                          chartId: services.settings.lastChartId,
+                          chartId: chartId,
                           difficulty: difficulty,
                           mode: mode,
                           board: services.settings.casualBoard
@@ -152,6 +177,7 @@ class _HomeScreenState extends State<HomeScreen>
     services.settings.update((s) {
       s.lastDifficulty = config.difficulty.name;
       s.lastMode = config.mode.name;
+      s.lastChartId = config.chartId;
     });
     await Navigator.of(context).push(
       MaterialPageRoute<void>(builder: (_) => GameScreen(config: config)),

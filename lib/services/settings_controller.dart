@@ -10,7 +10,10 @@ class AppSettings extends ChangeNotifier {
     this.themeId = 'disco_vault',
     this.boardScale = BoardScale.standard,
     this.audioOffsetMs = 0,
-    this.sfxVolume = 0.85,
+    this.musicVolume = 0.55,
+    this.sfxVolume = 0.9,
+    this.musicMuted = false,
+    this.sfxMuted = false,
     this.hapticsEnabled = true,
     this.reduceMotion = false,
     this.casualBoard = false,
@@ -22,7 +25,10 @@ class AppSettings extends ChangeNotifier {
   String themeId;
   BoardScale boardScale;
   int audioOffsetMs;
+  double musicVolume;
   double sfxVolume;
+  bool musicMuted;
+  bool sfxMuted;
   bool hapticsEnabled;
   bool reduceMotion;
   bool casualBoard;
@@ -36,12 +42,18 @@ class AppSettings extends ChangeNotifier {
         BoardScale.chunky => 480,
       };
 
+  double get effectiveMusicVolume => musicMuted ? 0 : musicVolume;
+  double get effectiveSfxVolume => sfxMuted ? 0 : sfxVolume;
+
   Map<String, dynamic> toJson() => {
-        'schemaVersion': 1,
+        'schemaVersion': 2,
         'themeId': themeId,
         'boardScale': boardScale.name,
         'audioOffsetMs': audioOffsetMs,
+        'musicVolume': musicVolume,
         'sfxVolume': sfxVolume,
+        'musicMuted': musicMuted,
+        'sfxMuted': sfxMuted,
         'hapticsEnabled': hapticsEnabled,
         'reduceMotion': reduceMotion,
         'casualBoard': casualBoard,
@@ -58,7 +70,10 @@ class AppSettings extends ChangeNotifier {
         orElse: () => BoardScale.standard,
       ),
       audioOffsetMs: json['audioOffsetMs'] as int? ?? 0,
-      sfxVolume: (json['sfxVolume'] as num?)?.toDouble() ?? 0.85,
+      musicVolume: (json['musicVolume'] as num?)?.toDouble() ?? 0.55,
+      sfxVolume: (json['sfxVolume'] as num?)?.toDouble() ?? 0.9,
+      musicMuted: json['musicMuted'] as bool? ?? false,
+      sfxMuted: json['sfxMuted'] as bool? ?? false,
       hapticsEnabled: json['hapticsEnabled'] as bool? ?? true,
       reduceMotion: json['reduceMotion'] as bool? ?? false,
       casualBoard: json['casualBoard'] as bool? ?? false,

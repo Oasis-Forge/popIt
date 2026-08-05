@@ -419,7 +419,12 @@ class _GameScreenState extends State<GameScreen> {
                               if (versus != null) ...[
                                 const SizedBox(height: 8),
                                 Text(
-                                  'You ${versus.local.score} · ${versus.opponent.displayName} ${versus.opponent.score}',
+                                  [
+                                    'You ${versus.local.score}',
+                                    for (final r in versus.rivals)
+                                      '${r.displayName} ${r.score}',
+                                  ].join(' · '),
+                                  textAlign: TextAlign.center,
                                   style: vaultLabel(
                                     size: 11,
                                     color: v.cyan,

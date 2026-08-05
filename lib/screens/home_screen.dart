@@ -290,7 +290,7 @@ class _HomeScreenState extends State<HomeScreen>
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Friend match · classic rules',
+                        '2–4 players · bots now, friends soon',
                         textAlign: TextAlign.center,
                         style: vaultLabel(
                           size: 9,

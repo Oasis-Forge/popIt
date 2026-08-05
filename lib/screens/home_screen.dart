@@ -6,6 +6,7 @@ import '../game/run_config.dart';
 import '../game/widgets/vault_decor.dart';
 import '../services/versus_service.dart';
 import '../theme/game_theme.dart';
+import '../theme/vault_palette.dart';
 import 'game_screen.dart';
 import 'road_to_glory_screen.dart';
 import 'settings_screen.dart';
@@ -47,18 +48,19 @@ class _HomeScreenState extends State<HomeScreen>
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
+        final v = context.vault;
         return StatefulBuilder(
           builder: (context, setSheet) {
             return Container(
-              decoration: const BoxDecoration(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Color(0xFF2A0C36), VaultColors.plateDeep],
+                  colors: [v.plateTop, v.plateDeep],
                 ),
                 border: Border(
-                  top: BorderSide(color: VaultColors.gold, width: 2),
+                  top: BorderSide(color: v.gold, width: 2),
                 ),
               ),
               padding: EdgeInsets.fromLTRB(
@@ -74,7 +76,7 @@ class _HomeScreenState extends State<HomeScreen>
                   Text(
                     'RHYTHM SETUP',
                     textAlign: TextAlign.center,
-                    style: vaultLabel(size: 12, color: VaultColors.gold),
+                    style: vaultLabel(size: 12, color: v.gold),
                   ),
                   const SizedBox(height: 6),
                   Text(
@@ -82,14 +84,14 @@ class _HomeScreenState extends State<HomeScreen>
                     textAlign: TextAlign.center,
                     style: vaultLabel(
                       size: 10,
-                      color: VaultColors.paper.withValues(alpha: 0.5),
+                      color: v.paper.withValues(alpha: 0.5),
                       weight: FontWeight.w400,
                     ),
                   ),
                   const SizedBox(height: 18),
                   DropdownButtonFormField<Difficulty>(
                     initialValue: difficulty,
-                    dropdownColor: VaultColors.plateMid,
+                    dropdownColor: v.plateMid,
                     decoration: const InputDecoration(
                       labelText: 'Difficulty',
                       border: OutlineInputBorder(),
@@ -105,7 +107,7 @@ class _HomeScreenState extends State<HomeScreen>
                   const SizedBox(height: 12),
                   DropdownButtonFormField<GameMode>(
                     initialValue: mode,
-                    dropdownColor: VaultColors.plateMid,
+                    dropdownColor: v.plateMid,
                     decoration: const InputDecoration(
                       labelText: 'Mode',
                       border: OutlineInputBorder(),
@@ -165,10 +167,11 @@ class _HomeScreenState extends State<HomeScreen>
 
   @override
   Widget build(BuildContext context) {
+    final v = context.vault;
     final services = AppScope.of(context);
     return Scaffold(
       body: DecoratedBox(
-        decoration: const BoxDecoration(gradient: VaultColors.roomGradient),
+        decoration: BoxDecoration(gradient: v.roomGradient),
         child: Stack(
           children: [
             const Positioned(
@@ -195,7 +198,7 @@ class _HomeScreenState extends State<HomeScreen>
                             );
                           },
                           icon: const Icon(Icons.settings_rounded),
-                          color: VaultColors.paper.withValues(alpha: 0.75),
+                          color: v.paper.withValues(alpha: 0.75),
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -204,7 +207,7 @@ class _HomeScreenState extends State<HomeScreen>
                         textAlign: TextAlign.center,
                         style: vaultLabel(
                           size: 10,
-                          color: VaultColors.gold,
+                          color: v.gold,
                           tracking: 0.46,
                         ),
                       ),
@@ -220,7 +223,7 @@ class _HomeScreenState extends State<HomeScreen>
                         ),
                         child: GradientText(
                           'POP\nIT',
-                          gradient: VaultColors.wordmarkGradient,
+                          gradient: v.wordmarkGradient,
                           style: vaultDisplay(
                             size: 64,
                             height: 0.86,
@@ -234,7 +237,7 @@ class _HomeScreenState extends State<HomeScreen>
                         textAlign: TextAlign.center,
                         style: vaultLabel(
                           size: 11,
-                          color: VaultColors.paper.withValues(alpha: 0.55),
+                          color: v.paper.withValues(alpha: 0.55),
                         ),
                       ),
                       const SizedBox(height: 32),
@@ -249,7 +252,7 @@ class _HomeScreenState extends State<HomeScreen>
                         textAlign: TextAlign.center,
                         style: vaultLabel(
                           size: 9,
-                          color: VaultColors.paper.withValues(alpha: 0.4),
+                          color: v.paper.withValues(alpha: 0.4),
                           weight: FontWeight.w400,
                         ),
                       ),
@@ -270,7 +273,7 @@ class _HomeScreenState extends State<HomeScreen>
                         textAlign: TextAlign.center,
                         style: vaultLabel(
                           size: 9,
-                          color: VaultColors.paper.withValues(alpha: 0.4),
+                          color: v.paper.withValues(alpha: 0.4),
                           weight: FontWeight.w400,
                         ),
                       ),
@@ -291,7 +294,7 @@ class _HomeScreenState extends State<HomeScreen>
                         textAlign: TextAlign.center,
                         style: vaultLabel(
                           size: 9,
-                          color: VaultColors.paper.withValues(alpha: 0.4),
+                          color: v.paper.withValues(alpha: 0.4),
                           weight: FontWeight.w400,
                         ),
                       ),
@@ -321,7 +324,7 @@ class _HomeScreenState extends State<HomeScreen>
                         textAlign: TextAlign.center,
                         style: vaultLabel(
                           size: 9,
-                          color: VaultColors.paper.withValues(alpha: 0.4),
+                          color: v.paper.withValues(alpha: 0.4),
                           weight: FontWeight.w400,
                         ),
                       ),

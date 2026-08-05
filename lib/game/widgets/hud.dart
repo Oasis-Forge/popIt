@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/game_theme.dart';
+import '../../theme/vault_palette.dart';
 import '../models.dart';
 
 /// Score / combo / accuracy cards.
@@ -18,6 +19,7 @@ class GameHud extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final v = context.vault;
     return Row(
       children: [
         Expanded(
@@ -32,7 +34,7 @@ class GameHud extends StatelessWidget {
           child: _StatCard(
             label: 'COMBO',
             value: combo > 0 ? '\u00d7$combo' : '—',
-            valueColor: VaultColors.gold,
+            valueColor: v.gold,
             emphasize: true,
           ),
         ),
@@ -41,7 +43,7 @@ class GameHud extends StatelessWidget {
           child: _StatCard(
             label: 'ACC',
             value: '${(accuracy * 100).round()}%',
-            valueColor: VaultColors.lime,
+            valueColor: v.lime,
           ),
         ),
       ],
@@ -64,6 +66,7 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final v = context.vault;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
       decoration: BoxDecoration(
@@ -73,16 +76,16 @@ class _StatCard extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  VaultColors.magenta.withValues(alpha: 0.22),
-                  VaultColors.violet.withValues(alpha: 0.16),
+                  v.magenta.withValues(alpha: 0.22),
+                  v.violet.withValues(alpha: 0.16),
                 ],
               )
             : null,
-        color: emphasize ? null : VaultColors.paper.withValues(alpha: 0.06),
+        color: emphasize ? null : v.paper.withValues(alpha: 0.06),
         border: Border.all(
           color: emphasize
-              ? VaultColors.magenta.withValues(alpha: 0.38)
-              : VaultColors.paper.withValues(alpha: 0.12),
+              ? v.magenta.withValues(alpha: 0.38)
+              : v.paper.withValues(alpha: 0.12),
         ),
       ),
       child: Column(
@@ -92,7 +95,7 @@ class _StatCard extends StatelessWidget {
             label,
             style: vaultLabel(
               size: 8.5,
-              color: VaultColors.paper.withValues(alpha: 0.45),
+              color: v.paper.withValues(alpha: 0.45),
             ),
           ),
           Text(
@@ -121,10 +124,11 @@ class TimingBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final v = context.vault;
     final t = (deltaMs / goodWindowMs).clamp(-1.0, 1.0);
     final labelStyle = vaultLabel(
       size: 8.5,
-      color: VaultColors.paper.withValues(alpha: 0.35),
+      color: v.paper.withValues(alpha: 0.35),
       tracking: 0.2,
     );
 
@@ -144,9 +148,9 @@ class TimingBar extends StatelessWidget {
                     borderRadius: BorderRadius.circular(99),
                     gradient: LinearGradient(
                       colors: [
-                        VaultColors.cyan.withValues(alpha: 0.25),
-                        VaultColors.gold.withValues(alpha: 0.55),
-                        VaultColors.magenta.withValues(alpha: 0.25),
+                        v.cyan.withValues(alpha: 0.25),
+                        v.gold.withValues(alpha: 0.55),
+                        v.magenta.withValues(alpha: 0.25),
                       ],
                     ),
                   ),
@@ -166,7 +170,7 @@ class TimingBar extends StatelessWidget {
                         color: Colors.white,
                         boxShadow: [
                           BoxShadow(
-                            color: VaultColors.gold.withValues(alpha: 0.85),
+                            color: v.gold.withValues(alpha: 0.85),
                             blurRadius: 14,
                             spreadRadius: 4,
                           ),
@@ -203,10 +207,11 @@ class JudgementLine extends StatelessWidget {
   Widget build(BuildContext context) {
     if (judgement == null) return const SizedBox(height: 30);
 
+    final v = context.vault;
     final (label, color) = switch (judgement!) {
-      Judgement.perfect => ('PERFECT', VaultColors.cyan),
-      Judgement.good => ('GOOD', VaultColors.gold),
-      Judgement.miss => ('MISS', VaultColors.missRed),
+      Judgement.perfect => ('PERFECT', v.cyan),
+      Judgement.good => ('GOOD', v.gold),
+      Judgement.miss => ('MISS', v.missRed),
     };
 
     return SizedBox(
@@ -237,7 +242,7 @@ class JudgementLine extends StatelessWidget {
                 '${deltaMs > 0 ? '+' : ''}$deltaMs MS',
                 style: vaultLabel(
                   size: 11,
-                  color: VaultColors.paper.withValues(alpha: 0.5),
+                  color: v.paper.withValues(alpha: 0.5),
                   tracking: 0.2,
                 ),
               ),

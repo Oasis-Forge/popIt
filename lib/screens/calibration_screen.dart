@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../app/app_scope.dart';
 import '../theme/game_theme.dart';
+import '../theme/vault_palette.dart';
 import '../game/widgets/vault_decor.dart';
 
 class CalibrationScreen extends StatefulWidget {
@@ -55,10 +56,11 @@ class _CalibrationScreenState extends State<CalibrationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final v = context.vault;
     final services = AppScope.of(context);
     return Scaffold(
       body: DecoratedBox(
-        decoration: const BoxDecoration(gradient: VaultColors.roomGradient),
+        decoration: BoxDecoration(gradient: v.roomGradient),
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(20),
@@ -69,10 +71,10 @@ class _CalibrationScreenState extends State<CalibrationScreen> {
                     IconButton(
                       onPressed: () => Navigator.pop(context),
                       icon: const Icon(Icons.close_rounded),
-                      color: VaultColors.paper,
+                      color: v.paper,
                     ),
                     const Spacer(),
-                    Text('CALIBRATION', style: vaultLabel(size: 12, color: VaultColors.gold)),
+                    Text('CALIBRATION', style: vaultLabel(size: 12, color: v.gold)),
                     const Spacer(),
                     const SizedBox(width: 48),
                   ],
@@ -93,10 +95,10 @@ class _CalibrationScreenState extends State<CalibrationScreen> {
                     height: 160,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: VaultColors.ctaGradient,
+                      gradient: v.ctaGradient,
                     ),
                     alignment: Alignment.center,
-                    child: Text('TAP', style: vaultDisplay(size: 28, color: VaultColors.ink)),
+                    child: Text('TAP', style: vaultDisplay(size: 28, color: v.ink)),
                   ),
                 ),
                 const Spacer(),

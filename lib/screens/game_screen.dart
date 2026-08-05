@@ -19,6 +19,7 @@ import '../game/widgets/pop_it_board.dart';
 import '../game/widgets/results_sheet.dart';
 import '../game/widgets/vault_decor.dart';
 import '../theme/game_theme.dart';
+import '../theme/vault_palette.dart';
 
 class GameScreen extends StatefulWidget {
   const GameScreen({
@@ -275,10 +276,11 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final v = context.vault;
     if (_loading) {
-      return const Scaffold(
+      return Scaffold(
         body: Center(
-          child: CircularProgressIndicator(color: VaultColors.gold),
+          child: CircularProgressIndicator(color: v.gold),
         ),
       );
     }
@@ -299,7 +301,7 @@ class _GameScreenState extends State<GameScreen> {
 
     return Scaffold(
       body: DecoratedBox(
-        decoration: const BoxDecoration(gradient: VaultColors.roomGradient),
+        decoration: BoxDecoration(gradient: v.roomGradient),
         child: Stack(
           children: [
             const Positioned(
@@ -315,6 +317,7 @@ class _GameScreenState extends State<GameScreen> {
                   child: ListenableBuilder(
                     listenable: _rhythm!,
                     builder: (context, _) {
+                      final v = context.vault;
                       final rhythm = _rhythm!;
                       final progress =
                           (rhythm.positionMs / rhythm.chart.durationMs)
@@ -340,7 +343,7 @@ class _GameScreenState extends State<GameScreen> {
                                       'CLOSE',
                                       style: vaultLabel(
                                         size: 10,
-                                        color: VaultColors.paper
+                                        color: v.paper
                                             .withValues(alpha: 0.45),
                                       ),
                                     ),
@@ -349,7 +352,7 @@ class _GameScreenState extends State<GameScreen> {
                                     rhythm.chart.title.toUpperCase(),
                                     style: vaultLabel(
                                       size: 10,
-                                      color: VaultColors.gold,
+                                      color: v.gold,
                                     ),
                                   ),
                                   Row(
@@ -359,7 +362,7 @@ class _GameScreenState extends State<GameScreen> {
                                           '♥${rhythm.lives} ',
                                           style: vaultLabel(
                                             size: 10,
-                                            color: VaultColors.magenta,
+                                            color: v.magenta,
                                           ),
                                         ),
                                       GestureDetector(
@@ -368,7 +371,7 @@ class _GameScreenState extends State<GameScreen> {
                                           _paused ? 'RESUME' : 'PAUSE',
                                           style: vaultLabel(
                                             size: 10,
-                                            color: VaultColors.paper
+                                            color: v.paper
                                                 .withValues(alpha: 0.45),
                                           ),
                                         ),
@@ -385,19 +388,19 @@ class _GameScreenState extends State<GameScreen> {
                                   child: Stack(
                                     children: [
                                       ColoredBox(
-                                        color: VaultColors.paper
+                                        color: v.paper
                                             .withValues(alpha: 0.12),
                                         child: const SizedBox.expand(),
                                       ),
                                       FractionallySizedBox(
                                         widthFactor: progress,
-                                        child: const DecoratedBox(
+                                        child: DecoratedBox(
                                           decoration: BoxDecoration(
                                             gradient: LinearGradient(
                                               colors: [
-                                                VaultColors.cyan,
-                                                VaultColors.magenta,
-                                                VaultColors.gold,
+                                                v.cyan,
+                                                v.magenta,
+                                                v.gold,
                                               ],
                                             ),
                                           ),
@@ -419,7 +422,7 @@ class _GameScreenState extends State<GameScreen> {
                                   'You ${versus.local.score} · ${versus.opponent.displayName} ${versus.opponent.score}',
                                   style: vaultLabel(
                                     size: 11,
-                                    color: VaultColors.cyan,
+                                    color: v.cyan,
                                   ),
                                 ),
                               ],
@@ -458,7 +461,7 @@ class _GameScreenState extends State<GameScreen> {
                                 ),
                                 style: vaultLabel(
                                   size: 10,
-                                  color: VaultColors.paper
+                                  color: v.paper
                                       .withValues(alpha: 0.45),
                                 ),
                               ),
@@ -478,7 +481,7 @@ class _GameScreenState extends State<GameScreen> {
                   child: Center(
                     child: Text(
                       '$_countdown',
-                      style: vaultDisplay(size: 96, color: VaultColors.gold),
+                      style: vaultDisplay(size: 96, color: v.gold),
                     ),
                   ),
                 ),

@@ -6,6 +6,7 @@ import '../game/run_config.dart';
 import '../game/widgets/vault_decor.dart';
 import '../services/versus_service.dart';
 import '../theme/game_theme.dart';
+import '../theme/vault_palette.dart';
 import 'game_screen.dart';
 
 class VersusLobbyScreen extends StatefulWidget {
@@ -53,14 +54,16 @@ class _VersusLobbyScreenState extends State<VersusLobbyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final v = context.vault;
     final versus = AppScope.of(context).versusService;
     return Scaffold(
       body: DecoratedBox(
-        decoration: const BoxDecoration(gradient: VaultColors.roomGradient),
+        decoration: BoxDecoration(gradient: v.roomGradient),
         child: SafeArea(
           child: ListenableBuilder(
             listenable: versus,
             builder: (context, _) {
+              final v = context.vault;
               return Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
@@ -73,12 +76,12 @@ class _VersusLobbyScreenState extends State<VersusLobbyScreen> {
                             Navigator.pop(context);
                           },
                           icon: const Icon(Icons.close_rounded),
-                          color: VaultColors.paper,
+                          color: v.paper,
                         ),
                         const Spacer(),
                         Text(
                           'VERSUS',
-                          style: vaultLabel(size: 12, color: VaultColors.gold),
+                          style: vaultLabel(size: 12, color: v.gold),
                         ),
                         const Spacer(),
                         const SizedBox(width: 48),
@@ -95,7 +98,7 @@ class _VersusLobbyScreenState extends State<VersusLobbyScreen> {
                       const SizedBox(height: 8),
                       Text(
                         _error!,
-                        style: vaultLabel(size: 11, color: VaultColors.missRed),
+                        style: vaultLabel(size: 11, color: v.missRed),
                       ),
                     ],
                     const SizedBox(height: 20),

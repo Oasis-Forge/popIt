@@ -12,21 +12,22 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final services = AppScope.of(context);
-    return Scaffold(
-      body: DecoratedBox(
-        decoration: const BoxDecoration(gradient: VaultColors.roomGradient),
-        child: SafeArea(
-          child: ListenableBuilder(
-            listenable: Listenable.merge([
-              services.settingsController,
-              services.profileController,
-              services.gamesService,
-            ]),
-            builder: (context, _) {
-              final s = services.settings;
-              final profile = services.profile;
-              final games = services.gamesService;
-              return ListView(
+    return ListenableBuilder(
+      listenable: Listenable.merge([
+        services.settingsController,
+        services.profileController,
+        services.gamesService,
+      ]),
+      builder: (context, _) {
+        final v = context.vault;
+        final s = services.settings;
+        final profile = services.profile;
+        final games = services.gamesService;
+        return Scaffold(
+          body: DecoratedBox(
+            decoration: BoxDecoration(gradient: v.roomGradient),
+            child: SafeArea(
+              child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
                 children: [
                   Row(
@@ -34,12 +35,12 @@ class SettingsScreen extends StatelessWidget {
                       IconButton(
                         onPressed: () => Navigator.pop(context),
                         icon: const Icon(Icons.close_rounded),
-                        color: VaultColors.paper,
+                        color: v.paper,
                       ),
                       const Spacer(),
                       Text(
                         'SETTINGS',
-                        style: vaultLabel(size: 12, color: VaultColors.gold),
+                        style: vaultLabel(size: 12, color: v.gold),
                       ),
                       const Spacer(),
                       const SizedBox(width: 48),
@@ -64,9 +65,18 @@ class SettingsScreen extends StatelessWidget {
                           onSelected: (_) {
                             if (p.locked &&
                                 !profile.unlockedThemeIds.contains(p.id)) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Unlock this theme by playing',
+                                    style: vaultLabel(size: 12),
+                                  ),
+                                  backgroundColor: v.plateDeep,
+                                ),
+                              );
                               return;
                             }
-                            s.update((v) => v.themeId = p.id);
+                            s.update((settings) => settings.themeId = p.id);
                           },
                         ),
                     ],
@@ -77,31 +87,32 @@ class SettingsScreen extends StatelessWidget {
                     ListTile(
                       title: Text(scale.name),
                       trailing: s.boardScale == scale
-                          ? const Icon(Icons.check, color: VaultColors.gold)
+                          ? Icon(Icons.check, color: v.gold)
                           : null,
                       onTap: () => s.update((x) => x.boardScale = scale),
                     ),
                   SwitchListTile(
                     title: const Text('Haptics'),
                     value: s.hapticsEnabled,
-                    onChanged: (v) => s.update((x) => x.hapticsEnabled = v),
+                    onChanged: (val) =>
+                        s.update((x) => x.hapticsEnabled = val),
                   ),
                   SwitchListTile(
                     title: const Text('Reduce motion'),
                     value: s.reduceMotion,
-                    onChanged: (v) => s.update((x) => x.reduceMotion = v),
+                    onChanged: (val) => s.update((x) => x.reduceMotion = val),
                   ),
                   SwitchListTile(
                     title: const Text('Casual 3×3 board'),
                     subtitle: const Text('Smaller comfort grid for rhythm'),
                     value: s.casualBoard,
-                    onChanged: (v) => s.update((x) => x.casualBoard = v),
+                    onChanged: (val) => s.update((x) => x.casualBoard = val),
                   ),
                   ListTile(
                     title: Text('SFX volume ${(s.sfxVolume * 100).round()}%'),
                     subtitle: Slider(
                       value: s.sfxVolume,
-                      onChanged: (v) => s.update((x) => x.sfxVolume = v),
+                      onChanged: (val) => s.update((x) => x.sfxVolume = val),
                     ),
                   ),
                   ListTile(
@@ -145,15 +156,15 @@ class SettingsScreen extends StatelessWidget {
                     'Streak ${profile.streakCurrent} · Best ${profile.streakBest} · Runs ${profile.runs}',
                     style: vaultLabel(
                       size: 11,
-                      color: VaultColors.paper.withValues(alpha: 0.55),
+                      color: v.paper.withValues(alpha: 0.55),
                     ),
                   ),
                 ],
-              );
-            },
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

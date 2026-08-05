@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models.dart';
 import '../../theme/game_theme.dart';
+import '../../theme/vault_palette.dart';
 import 'vault_decor.dart';
 
 Future<void> showResultsSheet({
@@ -17,23 +18,24 @@ Future<void> showResultsSheet({
     enableDrag: false,
     backgroundColor: Colors.transparent,
     builder: (context) {
+      final v = context.vault;
       return Container(
         decoration: BoxDecoration(
           borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
-          border: const Border(
-            top: BorderSide(color: VaultColors.gold, width: 2),
+          border: Border(
+            top: BorderSide(color: v.gold, width: 2),
           ),
-          gradient: const LinearGradient(
+          gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFF2A0C36), VaultColors.plateDeep],
+            colors: [v.plateTop, v.plateDeep],
           ),
         ),
         padding: const EdgeInsets.fromLTRB(24, 22, 24, 32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(result.grade, style: vaultDisplay(size: 28, color: VaultColors.gold)),
+            Text(result.grade, style: vaultDisplay(size: 28, color: v.gold)),
             const SizedBox(height: 8),
             Text('SCORE ${result.score}', style: vaultDisplay(size: 22)),
             const SizedBox(height: 6),
@@ -42,7 +44,7 @@ Future<void> showResultsSheet({
               textAlign: TextAlign.center,
               style: vaultLabel(
                 size: 11,
-                color: VaultColors.paper.withValues(alpha: 0.6),
+                color: v.paper.withValues(alpha: 0.6),
                 weight: FontWeight.w400,
               ),
             ),

@@ -59,6 +59,7 @@ class PopItApp extends StatelessWidget {
             title: 'Pop It',
             debugShowCheckedModeBanner: false,
             theme: buildPopItTheme(palette: palette),
+            themeAnimationDuration: const Duration(milliseconds: 350),
             home: const HomeScreen(),
           );
         },

@@ -8,6 +8,7 @@ import '../game/widgets/bubble.dart';
 import '../game/widgets/pop_it_board.dart';
 import '../game/widgets/vault_decor.dart';
 import '../theme/game_theme.dart';
+import '../theme/vault_palette.dart';
 
 class RoadToGloryScreen extends StatefulWidget {
   const RoadToGloryScreen({super.key});
@@ -63,11 +64,12 @@ class _RoadToGloryScreenState extends State<RoadToGloryScreen> {
       });
     }
     if (_game.banner != null) {
+      final v = context.vault;
       final message = _game.banner!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(message, style: vaultLabel(size: 12)),
-          backgroundColor: VaultColors.plateDeep,
+          backgroundColor: v.plateDeep,
           duration: const Duration(milliseconds: 1400),
         ),
       );
@@ -83,16 +85,17 @@ class _RoadToGloryScreenState extends State<RoadToGloryScreen> {
       enableDrag: false,
       backgroundColor: Colors.transparent,
       builder: (context) {
+        final v = context.vault;
         return Container(
           decoration: BoxDecoration(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
-            border: const Border(
-              top: BorderSide(color: VaultColors.gold, width: 2),
+            border: Border(
+              top: BorderSide(color: v.gold, width: 2),
             ),
-            gradient: const LinearGradient(
+            gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [Color(0xFF2A0C36), VaultColors.plateDeep],
+              colors: [v.plateTop, v.plateDeep],
             ),
           ),
           padding: const EdgeInsets.fromLTRB(24, 22, 24, 32),
@@ -101,7 +104,7 @@ class _RoadToGloryScreenState extends State<RoadToGloryScreen> {
             children: [
               Text(
                 'MISSED',
-                style: vaultDisplay(size: 34, color: VaultColors.missRed),
+                style: vaultDisplay(size: 34, color: v.missRed),
               ),
               const SizedBox(height: 8),
               Text(
@@ -109,7 +112,7 @@ class _RoadToGloryScreenState extends State<RoadToGloryScreen> {
                 textAlign: TextAlign.center,
                 style: vaultLabel(
                   size: 13,
-                  color: VaultColors.paper.withValues(alpha: 0.65),
+                  color: v.paper.withValues(alpha: 0.65),
                   weight: FontWeight.w400,
                 ),
               ),
@@ -182,10 +185,11 @@ class _RoadToGloryScreenState extends State<RoadToGloryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final v = context.vault;
     if (_loading) {
-      return const Scaffold(
+      return Scaffold(
         body: Center(
-          child: CircularProgressIndicator(color: VaultColors.gold),
+          child: CircularProgressIndicator(color: v.gold),
         ),
       );
     }
@@ -202,7 +206,7 @@ class _RoadToGloryScreenState extends State<RoadToGloryScreen> {
 
     return Scaffold(
       body: DecoratedBox(
-        decoration: const BoxDecoration(gradient: VaultColors.roomGradient),
+        decoration: BoxDecoration(gradient: v.roomGradient),
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
@@ -213,14 +217,14 @@ class _RoadToGloryScreenState extends State<RoadToGloryScreen> {
                     IconButton(
                       onPressed: () => Navigator.of(context).pop(),
                       icon: const Icon(Icons.close_rounded),
-                      color: VaultColors.paper,
+                      color: v.paper,
                     ),
                     const Spacer(),
                     Text(
                       'ROAD TO GLORY',
                       style: vaultLabel(
                         size: 12,
-                        color: VaultColors.gold,
+                        color: v.gold,
                         tracking: 0.28,
                       ),
                     ),
@@ -260,7 +264,7 @@ class _RoadToGloryScreenState extends State<RoadToGloryScreen> {
                   textAlign: TextAlign.center,
                   style: vaultLabel(
                     size: 11,
-                    color: VaultColors.paper.withValues(alpha: 0.5),
+                    color: v.paper.withValues(alpha: 0.5),
                     weight: FontWeight.w400,
                   ),
                 ),
@@ -301,17 +305,18 @@ class _HudChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final v = context.vault;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
         color: emphasize
-            ? VaultColors.magenta.withValues(alpha: 0.18)
-            : VaultColors.paper.withValues(alpha: 0.06),
+            ? v.magenta.withValues(alpha: 0.18)
+            : v.paper.withValues(alpha: 0.06),
         border: Border.all(
           color: emphasize
-              ? VaultColors.magenta.withValues(alpha: 0.35)
-              : VaultColors.paper.withValues(alpha: 0.12),
+              ? v.magenta.withValues(alpha: 0.35)
+              : v.paper.withValues(alpha: 0.12),
         ),
       ),
       child: Column(
@@ -321,7 +326,7 @@ class _HudChip extends StatelessWidget {
             label,
             style: vaultLabel(
               size: 9,
-              color: VaultColors.paper.withValues(alpha: 0.45),
+              color: v.paper.withValues(alpha: 0.45),
               tracking: 0.24,
             ),
           ),
@@ -330,7 +335,7 @@ class _HudChip extends StatelessWidget {
             value,
             style: vaultDisplay(
               size: 20,
-              color: emphasize ? VaultColors.gold : VaultColors.paper,
+              color: emphasize ? v.gold : v.paper,
             ),
           ),
         ],

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Placeholder GPGS IDs. Replace after Play Console configuration. -->
+<resources>
+    <string name="app_id" translatable="false">000000000000</string>
+    <string name="package_name" translatable="false">com.popit.popit</string>
+    <string name="leaderboard_classic_normal" translatable="false">lb_classic_normal</string>
+    <string name="leaderboard_classic_hard" translatable="false">lb_classic_hard</string>
+    <string name="leaderboard_endless_normal" translatable="false">lb_endless_normal</string>
+    <string name="leaderboard_survival_normal" translatable="false">lb_survival_normal</string>
+    <string name="achievement_first_flawless" translatable="false">ach_first_flawless</string>
+    <string name="achievement_combo_50" translatable="false">ach_combo_50</string>
+    <string name="achievement_combo_100" translatable="false">ach_combo_100</string>
+    <string name="achievement_streak_7" translatable="false">ach_streak_7</string>
+    <string name="achievement_theme_neon" translatable="false">ach_theme_neon</string>
+    <string name="achievement_theme_aurora" translatable="false">ach_theme_aurora</string>
+    <string name="achievement_theme_sunset" translatable="false">ach_theme_sunset</string>
+    <string name="achievement_theme_mono" translatable="false">ach_theme_mono</string>
+    <string name="achievement_versus_win" translatable="false">ach_versus_win</string>
+    <string name="achievement_daily_3" translatable="false">ach_daily_3</string>
+</resources>

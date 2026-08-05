@@ -11,7 +11,8 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.8
   just_audio: ^0.10.4
-  google_fonts: ^6.2.1
+  shared_preferences: ^2.5.3
+  share_plus: ^11.0.0
 
 dev_dependencies:
   flutter_test:
@@ -23,3 +24,10 @@ flutter:
   assets:
     - assets/audio/
     - assets/charts/
+  fonts:
+    - family: ArchivoBlack
+      fonts:
+        - asset: assets/fonts/ArchivoBlack-Regular.ttf
+    - family: SpaceGrotesk
+      fonts:
+        - asset: assets/fonts/SpaceGrotesk-Variable.ttf

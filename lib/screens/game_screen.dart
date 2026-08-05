@@ -1,68 +1,117 @@
-import 'dart:async';
+﻿import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:share_plus/share_plus.dart';
 
+import '../app/app_scope.dart';
 import '../audio/audio_controller.dart';
-import '../game/chart.dart';
+import '../data/player_profile.dart';
+import '../game/chart_library.dart';
+import '../game/game_rules.dart';
 import '../game/models.dart';
 import '../game/rhythm_controller.dart';
+import '../game/run_config.dart';
 import '../game/widgets/bubble.dart';
 import '../game/widgets/hud.dart';
 import '../game/widgets/pop_it_board.dart';
+import '../game/widgets/results_sheet.dart';
 import '../game/widgets/vault_decor.dart';
 import '../theme/game_theme.dart';
 
 class GameScreen extends StatefulWidget {
-  const GameScreen({super.key});
+  const GameScreen({
+    super.key,
+    this.config = const RunConfig(chartId: 'demo_beat'),
+    this.dailySeed,
+  });
+
+  final RunConfig config;
+  final String? dailySeed;
 
   @override
   State<GameScreen> createState() => _GameScreenState();
 }
 
 class _GameScreenState extends State<GameScreen> {
-  static const rows = 4;
-  static const cols = 5;
-
   final AudioController _audio = AudioController();
+  final GlobalKey _shareKey = GlobalKey();
   RhythmController? _rhythm;
   StreamSubscription<Duration>? _positionSub;
   StreamSubscription<PlayerState>? _stateSub;
   bool _loading = true;
   String? _error;
   bool _resultsShown = false;
+  bool _paused = false;
+  int _countdown = 3;
 
   @override
   void initState() {
     super.initState();
-    _boot();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _boot());
   }
 
   Future<void> _boot() async {
     try {
-      final chart = await loadDemoChart();
-      final rhythm = RhythmController(chart: chart);
+      final services = AppScope.of(context);
+      final meta = services.chartLibrary.byId(widget.config.chartId);
+      var chart = await loadChart(meta);
+      final shaped = applyDensity(
+        chart.notes,
+        widget.config.difficultyConfig.density,
+      );
+      chart = Chart(
+        id: chart.id,
+        title: widget.dailySeed == null
+            ? chart.title
+            : 'Daily ${widget.dailySeed}',
+        artist: chart.artist,
+        bpm: chart.bpm,
+        audioAsset: chart.audioAsset,
+        durationMs: chart.durationMs,
+        notes: shaped,
+      );
+      final rules = rulesFor(widget.config.mode);
+      final rhythm = RhythmController(
+        chart: chart,
+        timing: widget.config.difficultyConfig.timing,
+        rules: rules,
+      );
       await _audio.load(
         musicAsset: chart.audioAsset,
         popSfxAsset: 'assets/audio/pop.wav',
+        loseSfxAsset: 'assets/audio/lose.wav',
       );
+      await _audio.setSfxVolume(services.settings.sfxVolume);
+      await _audio.setLoopOne(rules.loops);
       if (!mounted) return;
       setState(() {
         _rhythm = rhythm;
         _loading = false;
+        _countdown = 3;
       });
       _positionSub = _audio.positionStream.listen((pos) {
-        _rhythm?.updateTime(pos.inMilliseconds);
+        final offset = services.settings.audioOffsetMs;
+        _rhythm?.updateTime(pos.inMilliseconds - offset);
+        if (widget.config.versusRoom != null && _rhythm != null) {
+          services.versusService.publishLocal(
+            score: _rhythm!.score,
+            combo: _rhythm!.combo,
+            accuracy: _rhythm!.accuracy,
+            posMs: _rhythm!.positionMs,
+          );
+        }
         _maybeShowResults();
       });
       _stateSub = _audio.playerStateStream.listen((state) {
-        if (state.processingState == ProcessingState.completed) {
+        if (state.processingState == ProcessingState.completed &&
+            !rules.loops) {
           _rhythm?.updateTime(_rhythm!.chart.durationMs);
           _maybeShowResults();
         }
       });
-      await _audio.play();
+      await _runCountdownThenPlay();
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -72,23 +121,66 @@ class _GameScreenState extends State<GameScreen> {
     }
   }
 
+  Future<void> _runCountdownThenPlay() async {
+    for (var i = 3; i >= 1; i--) {
+      if (!mounted) return;
+      setState(() => _countdown = i);
+      await Future<void>.delayed(const Duration(seconds: 1));
+    }
+    if (!mounted) return;
+    setState(() => _countdown = 0);
+    await _audio.play();
+  }
+
   void _maybeShowResults() {
     final rhythm = _rhythm;
     if (rhythm == null || !rhythm.finished || _resultsShown) return;
     _resultsShown = true;
-    _audio.stop();
+    _audio.pause();
+    final services = AppScope.of(context);
+    final result = rhythm.buildResult();
+    final key =
+        '${widget.config.chartId}|${widget.config.difficulty.name}|${widget.config.mode.name}';
+    services.profile.recordRun(
+      key: key,
+      best: RunBest(
+        score: result.score,
+        accuracy: result.accuracy,
+        maxCombo: result.maxCombo,
+        perfect: result.perfect,
+        good: result.good,
+        miss: result.miss,
+        grade: result.grade,
+        atEpochMs: DateTime.now().millisecondsSinceEpoch,
+      ),
+    );
+    _unlockThemes(services, result);
+    // Versus never feeds global leaderboards.
+    if (widget.config.versusRoom == null) {
+      final lbId =
+          'lb_${widget.config.mode.name}_${widget.config.difficulty.name}';
+      services.gamesService.queueOrSubmit(
+        leaderboardId: lbId,
+        score: result.score,
+        enqueue: (pending) {
+          services.profileController.enqueueLeaderboard(pending);
+        },
+      );
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      _showResults();
+      _showResults(result);
     });
   }
 
-  static String _grade(double acc) {
-    if (acc >= 0.98) return 'FLAWLESS';
-    if (acc >= 0.9) return 'BRILLIANT';
-    if (acc >= 0.75) return 'POLISHED';
-    if (acc >= 0.5) return 'ROUGH CUT';
-    return 'UNCUT';
+  void _unlockThemes(AppServices services, RunResult result) {
+    final p = services.profile;
+    if (p.lifetimeScore >= 50000) p.unlockTheme('neon_arcade');
+    if (result.maxCombo >= 100) p.unlockTheme('aurora_ice');
+    if (result.grade == 'FLAWLESS') p.unlockTheme('sunset_bakery');
+    if (widget.config.versusRoom != null && result.score > 0) {
+      p.unlockTheme('midnight_mono');
+    }
   }
 
   static String _clock(int ms, int durationMs) {
@@ -96,125 +188,28 @@ class _GameScreenState extends State<GameScreen> {
     return '${secs ~/ 60}:${(secs % 60).toString().padLeft(2, '0')}';
   }
 
-  Future<void> _showResults() async {
-    final rhythm = _rhythm!;
-    await showModalBottomSheet<void>(
+  Future<void> _showResults(RunResult result) async {
+    await showResultsSheet(
       context: context,
-      isDismissible: false,
-      enableDrag: false,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return Container(
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
-            border: const Border(
-              top: BorderSide(color: VaultColors.gold, width: 2),
-            ),
-            gradient: const LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Color(0xFF2A0C36), VaultColors.plateDeep],
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.75),
-                blurRadius: 60,
-                offset: const Offset(0, -22),
-              ),
-            ],
-          ),
-          child: SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(26, 30, 26, 30),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    "THAT'S A SET",
-                    style: vaultLabel(
-                      size: 10,
-                      color: VaultColors.gold,
-                      tracking: 0.4,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  GradientText(
-                    '${rhythm.score}',
-                    gradient: VaultColors.scoreGradient,
-                    style: vaultDisplay(size: 60),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    _grade(rhythm.accuracy),
-                    style: vaultLabel(
-                      size: 13,
-                      color: VaultColors.paper.withValues(alpha: 0.6),
-                      tracking: 0.26,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _ResultTile(
-                          label: 'ACC',
-                          value: '${(rhythm.accuracy * 100).round()}%',
-                          color: VaultColors.lime,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _ResultTile(
-                          label: 'COMBO',
-                          value: '${rhythm.maxCombo}',
-                          color: VaultColors.gold,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _ResultTile(
-                          label: 'P/G/M',
-                          value:
-                              '${rhythm.perfectCount}/${rhythm.goodCount}/${rhythm.missCount}',
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 22),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                            Navigator.of(this.context).pop();
-                          },
-                          child: const Text('HOME'),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        flex: 2,
-                        child: VaultCta(
-                          label: 'AGAIN',
-                          fontSize: 13,
-                          verticalPadding: 17,
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                            _replay();
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
+      result: result,
+      onHome: () {
+        Navigator.of(context).pop();
+        Navigator.of(context).pop();
       },
+      onReplay: () {
+        Navigator.of(context).pop();
+        _replay();
+      },
+      onShare: _shareScore,
+    );
+  }
+
+  Future<void> _shareScore() async {
+    final rhythm = _rhythm;
+    if (rhythm == null) return;
+    final r = rhythm.buildResult();
+    await SharePlus.instance.share(
+      ShareParams(text: 'Pop It ${r.grade}: ${r.score} pts · x${r.maxCombo}'),
     );
   }
 
@@ -222,22 +217,39 @@ class _GameScreenState extends State<GameScreen> {
     _resultsShown = false;
     _rhythm?.reset();
     await _audio.seekZero();
-    await _audio.play();
+    await _runCountdownThenPlay();
     setState(() {});
+  }
+
+  void _togglePause() {
+    final services = AppScope.of(context);
+    setState(() => _paused = !_paused);
+    if (_paused) {
+      _audio.pause();
+    } else {
+      _audio.resume();
+    }
+    if (services.settings.hapticsEnabled) {
+      HapticFeedback.selectionClick();
+    }
   }
 
   void _onBubbleTap(int bubbleId) {
     final rhythm = _rhythm;
-    if (rhythm == null || rhythm.finished) return;
+    if (rhythm == null || rhythm.finished || _paused || _countdown > 0) return;
     final result = rhythm.onBubbleTapped(bubbleId);
     if (result == null) return;
-
+    final haptics = AppScope.of(context).settings.hapticsEnabled;
     if (result.judgement == Judgement.perfect ||
         result.judgement == Judgement.good) {
-      HapticFeedback.lightImpact();
+      if (haptics) HapticFeedback.lightImpact();
       _audio.playPop();
+      // Combo juice on decade milestones.
+      if (rhythm.combo > 0 && rhythm.combo % 10 == 0 && haptics) {
+        HapticFeedback.mediumImpact();
+      }
     } else {
-      HapticFeedback.heavyImpact();
+      if (haptics) HapticFeedback.heavyImpact();
     }
   }
 
@@ -275,14 +287,15 @@ class _GameScreenState extends State<GameScreen> {
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
-            child: Text(
-              _error ?? 'Failed to load game',
-              textAlign: TextAlign.center,
-            ),
+            child: Text(_error ?? 'Failed to load game', textAlign: TextAlign.center),
           ),
         ),
       );
     }
+
+    final services = AppScope.of(context);
+    final board = widget.config.board;
+    final maxW = services.settings.boardMaxWidth;
 
     return Scaffold(
       body: DecoratedBox(
@@ -303,113 +316,154 @@ class _GameScreenState extends State<GameScreen> {
                     listenable: _rhythm!,
                     builder: (context, _) {
                       final rhythm = _rhythm!;
-                      final progress = (rhythm.positionMs /
-                              rhythm.chart.durationMs)
-                          .clamp(0.0, 1.0);
+                      final progress =
+                          (rhythm.positionMs / rhythm.chart.durationMs)
+                              .clamp(0.0, 1.0);
                       final fresh = rhythm.lastJudgement != null;
+                      final versus = widget.config.versusRoom != null
+                          ? services.versusService
+                          : null;
 
-                      return Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 24, 20, 30),
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
-                              children: [
-                                GestureDetector(
-                                  onTap: () => Navigator.of(context).pop(),
-                                  child: Text(
-                                    'CLOSE',
+                      return RepaintBoundary(
+                        key: _shareKey,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 24, 20, 30),
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  GestureDetector(
+                                    onTap: () => Navigator.of(context).pop(),
+                                    child: Text(
+                                      'CLOSE',
+                                      style: vaultLabel(
+                                        size: 10,
+                                        color: VaultColors.paper
+                                            .withValues(alpha: 0.45),
+                                      ),
+                                    ),
+                                  ),
+                                  Text(
+                                    rhythm.chart.title.toUpperCase(),
                                     style: vaultLabel(
                                       size: 10,
-                                      color: VaultColors.paper
-                                          .withValues(alpha: 0.45),
+                                      color: VaultColors.gold,
                                     ),
                                   ),
-                                ),
-                                Text(
-                                  rhythm.chart.title.toUpperCase(),
-                                  style: vaultLabel(
-                                    size: 10,
-                                    color: VaultColors.gold,
-                                  ),
-                                ),
-                                Text(
-                                  _clock(
-                                    rhythm.positionMs,
-                                    rhythm.chart.durationMs,
-                                  ),
-                                  style: vaultLabel(
-                                    size: 10,
-                                    color: VaultColors.paper
-                                        .withValues(alpha: 0.45),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(99),
-                              child: SizedBox(
-                                height: 6,
-                                child: Stack(
-                                  children: [
-                                    ColoredBox(
-                                      color: VaultColors.paper
-                                          .withValues(alpha: 0.12),
-                                      child: const SizedBox.expand(),
-                                    ),
-                                    FractionallySizedBox(
-                                      widthFactor: progress,
-                                      child: const DecoratedBox(
-                                        decoration: BoxDecoration(
-                                          gradient: LinearGradient(
-                                            colors: [
-                                              VaultColors.cyan,
-                                              VaultColors.magenta,
-                                              VaultColors.gold,
-                                            ],
+                                  Row(
+                                    children: [
+                                      if (rhythm.rules.startingLives > 0)
+                                        Text(
+                                          '♥${rhythm.lives} ',
+                                          style: vaultLabel(
+                                            size: 10,
+                                            color: VaultColors.magenta,
+                                          ),
+                                        ),
+                                      GestureDetector(
+                                        onTap: _togglePause,
+                                        child: Text(
+                                          _paused ? 'RESUME' : 'PAUSE',
+                                          style: vaultLabel(
+                                            size: 10,
+                                            color: VaultColors.paper
+                                                .withValues(alpha: 0.45),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ),
+                                    ],
+                                  ),
+                                ],
                               ),
-                            ),
-                            const SizedBox(height: 16),
-                            GameHud(
-                              score: rhythm.score,
-                              combo: rhythm.combo,
-                              accuracy: rhythm.accuracy,
-                            ),
-                            const SizedBox(height: 14),
-                            TimingBar(
-                              deltaMs: rhythm.lastDeltaMs,
-                              visible: fresh &&
-                                  rhythm.lastJudgement != Judgement.miss,
-                            ),
-                            const SizedBox(height: 6),
-                            JudgementLine(
-                              judgement: rhythm.lastJudgement,
-                              deltaMs: rhythm.lastDeltaMs,
-                              judgementToken: rhythm.judgementToken,
-                            ),
-                            Expanded(
-                              child: Center(
-                                child: ConstrainedBox(
-                                  constraints:
-                                      const BoxConstraints(maxWidth: 420),
-                                  child: PopItBoard(
-                                    rows: rows,
-                                    cols: cols,
-                                    stateForBubble: _stateFor,
-                                    onBubbleTap: _onBubbleTap,
+                              const SizedBox(height: 12),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(99),
+                                child: SizedBox(
+                                  height: 6,
+                                  child: Stack(
+                                    children: [
+                                      ColoredBox(
+                                        color: VaultColors.paper
+                                            .withValues(alpha: 0.12),
+                                        child: const SizedBox.expand(),
+                                      ),
+                                      FractionallySizedBox(
+                                        widthFactor: progress,
+                                        child: const DecoratedBox(
+                                          decoration: BoxDecoration(
+                                            gradient: LinearGradient(
+                                              colors: [
+                                                VaultColors.cyan,
+                                                VaultColors.magenta,
+                                                VaultColors.gold,
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 16),
+                              GameHud(
+                                score: rhythm.score,
+                                combo: rhythm.combo,
+                                accuracy: rhythm.accuracy,
+                              ),
+                              if (versus != null) ...[
+                                const SizedBox(height: 8),
+                                Text(
+                                  'You ${versus.local.score} · ${versus.opponent.displayName} ${versus.opponent.score}',
+                                  style: vaultLabel(
+                                    size: 11,
+                                    color: VaultColors.cyan,
+                                  ),
+                                ),
+                              ],
+                              const SizedBox(height: 14),
+                              TimingBar(
+                                deltaMs: rhythm.lastDeltaMs,
+                                visible: fresh &&
+                                    rhythm.lastJudgement != Judgement.miss,
+                                goodWindowMs: widget.config.difficultyConfig
+                                    .timing.goodWindowMs,
+                              ),
+                              const SizedBox(height: 6),
+                              JudgementLine(
+                                judgement: rhythm.lastJudgement,
+                                deltaMs: rhythm.lastDeltaMs,
+                                judgementToken: rhythm.judgementToken,
+                              ),
+                              Expanded(
+                                child: Center(
+                                  child: ConstrainedBox(
+                                    constraints: BoxConstraints(maxWidth: maxW),
+                                    child: PopItBoard(
+                                      rows: board.rows,
+                                      cols: board.cols,
+                                      boardScale: services.settings.boardScale,
+                                      stateForBubble: _stateFor,
+                                      onBubbleTap: _onBubbleTap,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                _clock(
+                                  rhythm.positionMs,
+                                  rhythm.chart.durationMs,
+                                ),
+                                style: vaultLabel(
+                                  size: 10,
+                                  color: VaultColors.paper
+                                      .withValues(alpha: 0.45),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     },
@@ -417,49 +471,20 @@ class _GameScreenState extends State<GameScreen> {
                 ),
               ),
             ),
+            if (_countdown > 0)
+              Positioned.fill(
+                child: ColoredBox(
+                  color: Colors.black54,
+                  child: Center(
+                    child: Text(
+                      '$_countdown',
+                      style: vaultDisplay(size: 96, color: VaultColors.gold),
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _ResultTile extends StatelessWidget {
-  const _ResultTile({
-    required this.label,
-    required this.value,
-    required this.color,
-  });
-
-  final String label;
-  final String value;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: VaultColors.paper.withValues(alpha: 0.07),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: vaultLabel(
-              size: 8.5,
-              color: VaultColors.paper.withValues(alpha: 0.45),
-              tracking: 0.24,
-            ),
-          ),
-          Text(
-            value,
-            maxLines: 1,
-            style: vaultDisplay(size: 23, color: color),
-          ),
-        ],
       ),
     );
   }

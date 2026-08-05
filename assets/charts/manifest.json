@@ -1,0 +1,13 @@
+{
+  "charts": [
+    {
+      "id": "demo_beat",
+      "title": "Demo Beat",
+      "artist": "Pop It",
+      "bpm": 120,
+      "durationMs": 32000,
+      "audioAsset": "assets/audio/demo_beat.wav",
+      "chartAsset": "assets/charts/demo.json"
+    }
+  ]
+}

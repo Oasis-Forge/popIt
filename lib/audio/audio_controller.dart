@@ -40,6 +40,8 @@ class AudioController {
   }
 
   Future<void> play() => _music.play();
+  Future<void> pause() => _music.pause();
+  Future<void> resume() => _music.play();
 
   Future<void> stop() async {
     await _music.stop();
@@ -48,22 +50,29 @@ class AudioController {
 
   Future<void> seekZero() => _music.seek(Duration.zero);
 
+  Future<void> setSfxVolume(double volume) async {
+    await _pop.setVolume(volume.clamp(0, 1));
+    await _lose.setVolume(volume.clamp(0, 1));
+  }
+
+  Future<void> setSpeed(double speed) => _music.setSpeed(speed);
+
+  Future<void> setLoopOne(bool enabled) async {
+    await _music.setLoopMode(enabled ? LoopMode.one : LoopMode.off);
+  }
+
   Future<void> playPop() async {
     try {
       await _pop.seek(Duration.zero);
       await _pop.play();
-    } catch (_) {
-      // SFX should never break gameplay.
-    }
+    } catch (_) {}
   }
 
   Future<void> playLose() async {
     try {
       await _lose.seek(Duration.zero);
       await _lose.play();
-    } catch (_) {
-      // SFX should never break gameplay.
-    }
+    } catch (_) {}
   }
 
   Future<void> dispose() async {

@@ -1,13 +1,28 @@
 import 'package:flutter/foundation.dart';
 
+import 'game_rules.dart';
 import 'models.dart';
 
 class RhythmController extends ChangeNotifier {
-  RhythmController({required Chart chart}) : _chart = chart {
+  RhythmController({
+    required Chart chart,
+    TimingConfig? timing,
+    GameRules rules = const ClassicRules(),
+  })  : _chart = chart,
+        _baseTiming = timing ??
+            const TimingConfig(
+              perfectWindowMs: RhythmTiming.perfectWindowMs,
+              goodWindowMs: RhythmTiming.goodWindowMs,
+              cueLeadMs: RhythmTiming.cueLeadMs,
+            ),
+        _rules = rules {
     _pending = List<Note>.from(chart.notes);
+    _lives = rules.startingLives;
   }
 
   final Chart _chart;
+  final TimingConfig _baseTiming;
+  final GameRules _rules;
   late List<Note> _pending;
   final Set<int> _resolvedIds = {};
   final Set<int> _cuedBubbleIds = {};
@@ -21,11 +36,17 @@ class RhythmController extends ChangeNotifier {
   int _missCount = 0;
   int _positionMs = 0;
   int _lastDeltaMs = 0;
+  int _loop = 0;
+  int _lives = 0;
   bool _finished = false;
   Judgement? _lastJudgement;
   int _judgementToken = 0;
 
+  final ValueNotifier<int> position = ValueNotifier<int>(0);
+
   Chart get chart => _chart;
+  GameRules get rules => _rules;
+  TimingConfig get timing => _rules.timingForLoop(_loop, _baseTiming);
   int get score => _score;
   int get combo => _combo;
   int get maxCombo => _maxCombo;
@@ -34,33 +55,54 @@ class RhythmController extends ChangeNotifier {
   int get missCount => _missCount;
   int get positionMs => _positionMs;
   int get lastDeltaMs => _lastDeltaMs;
+  int get loop => _loop;
+  int get lives => _lives;
   bool get finished => _finished;
   Judgement? get lastJudgement => _lastJudgement;
   int get judgementToken => _judgementToken;
   Set<int> get cuedBubbleIds => _cuedBubbleIds;
   Set<int> get poppedBubbleIds => _poppedBubbleIds;
-
   int get totalNotes => _chart.notes.length;
 
   double get accuracy {
-    if (totalNotes == 0) return 0;
-    final hits = _perfectCount + _goodCount;
-    return hits / totalNotes;
+    final denom = _perfectCount + _goodCount + _missCount;
+    if (denom == 0) return 0;
+    return (_perfectCount + _goodCount) / denom;
   }
 
   void updateTime(int positionMs) {
     if (_finished) return;
-    _positionMs = positionMs;
+    final duration = _chart.durationMs;
+    var localPos = positionMs;
+    if (_rules.loops && duration > 0) {
+      _loop = positionMs ~/ duration;
+      localPos = positionMs % duration;
+    }
+    _positionMs = localPos;
+    position.value = positionMs;
+    final beforeCues = Set<int>.from(_cuedBubbleIds);
     _refreshCues();
+    final missesBefore = _missCount;
     _autoMissExpired();
-    if (positionMs >= _chart.durationMs && _pending.isEmpty) {
+    final chartDone = !_rules.loops &&
+        positionMs >= duration &&
+        _pending.isEmpty;
+    if (_rules.isRunOver(
+          lives: _lives,
+          missCount: _missCount,
+          chartFinished: chartDone,
+        )) {
       _finished = true;
     }
-    notifyListeners();
+    final cuesChanged = !setEquals(beforeCues, _cuedBubbleIds);
+    if (cuesChanged || _missCount != missesBefore || _finished) {
+      notifyListeners();
+    }
   }
 
   HitResult? onBubbleTapped(int bubbleId) {
     if (_finished) return null;
+    final t = timing;
 
     Note? best;
     var bestAbs = 1 << 30;
@@ -68,7 +110,7 @@ class RhythmController extends ChangeNotifier {
       if (note.bubbleId != bubbleId) continue;
       final delta = _positionMs - note.tMs;
       final abs = delta.abs();
-      if (abs <= RhythmTiming.goodWindowMs && abs < bestAbs) {
+      if (abs <= t.goodWindowMs && abs < bestAbs) {
         best = note;
         bestAbs = abs;
       }
@@ -76,7 +118,6 @@ class RhythmController extends ChangeNotifier {
 
     if (best == null) {
       _registerMiss(bubbleId: bubbleId, fromTap: true);
-      // Stay pressed until the round ends or this bubble is cued again.
       _poppedBubbleIds.add(bubbleId);
       notifyListeners();
       return HitResult(
@@ -89,12 +130,36 @@ class RhythmController extends ChangeNotifier {
 
     final delta = _positionMs - best.tMs;
     final abs = delta.abs();
-    final judgement = abs <= RhythmTiming.perfectWindowMs
-        ? Judgement.perfect
-        : Judgement.good;
+    var judgement =
+        abs <= t.perfectWindowMs ? Judgement.perfect : Judgement.good;
+    if (_rules.requirePerfect && judgement == Judgement.good) {
+      // Precision: GOOD awards no points and breaks combo.
+      _resolveNote(best);
+      _combo = 0;
+      _goodCount += 1;
+      _lastDeltaMs = delta;
+      _setJudgement(Judgement.good);
+      _poppedBubbleIds.add(bubbleId);
+      _refreshCues();
+      notifyListeners();
+      return HitResult(
+        judgement: Judgement.good,
+        deltaMs: delta,
+        bubbleId: bubbleId,
+        points: 0,
+      );
+    }
 
     _resolveNote(best);
-    final points = _applyHit(judgement);
+    _combo += 1;
+    if (_combo > _maxCombo) _maxCombo = _combo;
+    final points = _rules.scoreFor(judgement, _combo);
+    _score += points;
+    if (judgement == Judgement.perfect) {
+      _perfectCount += 1;
+    } else {
+      _goodCount += 1;
+    }
     _poppedBubbleIds.add(bubbleId);
     _lastDeltaMs = delta;
     _setJudgement(judgement);
@@ -122,29 +187,54 @@ class RhythmController extends ChangeNotifier {
     _missCount = 0;
     _positionMs = 0;
     _lastDeltaMs = 0;
+    _loop = 0;
+    _lives = _rules.startingLives;
     _finished = false;
     _lastJudgement = null;
     _judgementToken = 0;
+    position.value = 0;
     notifyListeners();
   }
 
+  RunResult buildResult() {
+    final grade = () {
+      if (accuracy >= 0.98) return 'FLAWLESS';
+      if (accuracy >= 0.9) return 'BRILLIANT';
+      if (accuracy >= 0.75) return 'POLISHED';
+      if (accuracy >= 0.5) return 'ROUGH CUT';
+      return 'UNCUT';
+    }();
+    return RunResult(
+      score: _score,
+      maxCombo: _maxCombo,
+      perfect: _perfectCount,
+      good: _goodCount,
+      miss: _missCount,
+      accuracy: accuracy,
+      grade: grade,
+      livesRemaining: _rules.startingLives > 0 ? _lives : null,
+      loopsCompleted: _loop,
+    );
+  }
+
   void _refreshCues() {
+    final t = timing;
     _cuedBubbleIds.clear();
     for (final note in _pending) {
-      final start = note.tMs - RhythmTiming.cueLeadMs;
-      final end = note.tMs + RhythmTiming.goodWindowMs;
+      final start = note.tMs - t.cueLeadMs;
+      final end = note.tMs + t.goodWindowMs;
       if (_positionMs >= start && _positionMs < end) {
         _cuedBubbleIds.add(note.bubbleId);
       }
     }
-    // Allow the same bubble to rise again for later notes.
     _poppedBubbleIds.removeAll(_cuedBubbleIds);
   }
 
   void _autoMissExpired() {
+    final t = timing;
     final expired = <Note>[];
     for (final note in _pending) {
-      if (_positionMs > note.tMs + RhythmTiming.goodWindowMs) {
+      if (_positionMs > note.tMs + t.goodWindowMs) {
         expired.add(note);
       }
     }
@@ -159,36 +249,34 @@ class RhythmController extends ChangeNotifier {
     _resolvedIds.add(note.id);
   }
 
-  int _applyHit(Judgement judgement) {
-    _combo += 1;
-    if (_combo > _maxCombo) _maxCombo = _combo;
-    final multiplier = 1 + (_combo ~/ 10) * 0.1;
-    final base = judgement == Judgement.perfect
-        ? RhythmTiming.perfectScore
-        : RhythmTiming.goodScore;
-    final points = (base * multiplier).round();
-    _score += points;
-    if (judgement == Judgement.perfect) {
-      _perfectCount += 1;
-    } else {
-      _goodCount += 1;
-    }
-    return points;
-  }
-
   void _registerMiss({required int bubbleId, required bool fromTap}) {
     _combo = 0;
     _missCount += 1;
     _lastDeltaMs = 0;
+    if (_rules.startingLives > 0) {
+      _lives = (_lives - 1).clamp(0, 99);
+    }
     _setJudgement(Judgement.miss);
-    // Only player taps leave a lasting pressed stone; timed-out cues do not.
     if (fromTap) {
       _poppedBubbleIds.add(bubbleId);
+    }
+    if (_rules.isRunOver(
+      lives: _lives,
+      missCount: _missCount,
+      chartFinished: false,
+    )) {
+      _finished = true;
     }
   }
 
   void _setJudgement(Judgement judgement) {
     _lastJudgement = judgement;
     _judgementToken += 1;
+  }
+
+  @override
+  void dispose() {
+    position.dispose();
+    super.dispose();
   }
 }

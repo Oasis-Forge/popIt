@@ -108,14 +108,20 @@ class _StatCard extends StatelessWidget {
 
 /// Early / late offset of the last hit.
 class TimingBar extends StatelessWidget {
-  const TimingBar({super.key, required this.deltaMs, required this.visible});
+  const TimingBar({
+    super.key,
+    required this.deltaMs,
+    required this.visible,
+    this.goodWindowMs = RhythmTiming.goodWindowMs,
+  });
 
   final int deltaMs;
   final bool visible;
+  final int goodWindowMs;
 
   @override
   Widget build(BuildContext context) {
-    final t = (deltaMs / RhythmTiming.goodWindowMs).clamp(-1.0, 1.0);
+    final t = (deltaMs / goodWindowMs).clamp(-1.0, 1.0);
     final labelStyle = vaultLabel(
       size: 8.5,
       color: VaultColors.paper.withValues(alpha: 0.35),

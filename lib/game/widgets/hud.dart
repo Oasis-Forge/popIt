@@ -116,19 +116,24 @@ class TimingBar extends StatelessWidget {
     required this.deltaMs,
     required this.visible,
     this.goodWindowMs = RhythmTiming.goodWindowMs,
+    this.emphasize = false,
   });
 
   final int deltaMs;
   final bool visible;
   final int goodWindowMs;
+  final bool emphasize;
 
   @override
   Widget build(BuildContext context) {
     final v = context.vault;
     final t = (deltaMs / goodWindowMs).clamp(-1.0, 1.0);
+    final early = deltaMs < 0;
     final labelStyle = vaultLabel(
       size: 8.5,
-      color: v.paper.withValues(alpha: 0.35),
+      color: emphasize
+          ? (early ? v.cyan : v.magenta)
+          : v.paper.withValues(alpha: 0.35),
       tracking: 0.2,
     );
 
@@ -143,14 +148,14 @@ class TimingBar extends StatelessWidget {
               alignment: Alignment.center,
               children: [
                 Container(
-                  height: 4,
+                  height: emphasize ? 6 : 4,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(99),
                     gradient: LinearGradient(
                       colors: [
-                        v.cyan.withValues(alpha: 0.25),
-                        v.gold.withValues(alpha: 0.55),
-                        v.magenta.withValues(alpha: 0.25),
+                        v.cyan.withValues(alpha: emphasize ? 0.55 : 0.25),
+                        v.gold.withValues(alpha: emphasize ? 0.9 : 0.55),
+                        v.magenta.withValues(alpha: emphasize ? 0.55 : 0.25),
                       ],
                     ),
                   ),
@@ -163,16 +168,17 @@ class TimingBar extends StatelessWidget {
                     opacity: visible ? 1 : 0,
                     duration: const Duration(milliseconds: 160),
                     child: Container(
-                      width: 14,
-                      height: 14,
+                      width: emphasize ? 18 : 14,
+                      height: emphasize ? 18 : 14,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white,
                         boxShadow: [
                           BoxShadow(
-                            color: v.gold.withValues(alpha: 0.85),
-                            blurRadius: 14,
-                            spreadRadius: 4,
+                            color: (early ? v.cyan : v.magenta)
+                                .withValues(alpha: emphasize ? 1 : 0.85),
+                            blurRadius: emphasize ? 18 : 14,
+                            spreadRadius: emphasize ? 6 : 4,
                           ),
                         ],
                       ),

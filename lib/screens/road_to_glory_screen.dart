@@ -175,10 +175,7 @@ class _RoadToGloryScreenState extends State<RoadToGloryScreen> {
         AppScope.maybeOf(context)?.settings.hapticsEnabled ?? true;
     if (ok) {
       if (haptics) HapticFeedback.lightImpact();
-      _audio.playHitTone(
-        combo: _game.popped.length.clamp(1, 999),
-        perfect: true,
-      );
+      _audio.playPop();
     } else {
       if (haptics) HapticFeedback.heavyImpact();
       _audio.playLose();

@@ -67,6 +67,11 @@ class DailyChallenge {
     return '$title · ${difficulty.name} · ${_modeShort(mode)}';
   }
 
+  static DailyChallenge forTomorrow(ChartLibrary library, [DateTime? now]) {
+    final n = (now ?? DateTime.now()).toUtc().add(const Duration(days: 1));
+    return resolve(library, VersusService.dailySeed(n));
+  }
+
   static String _modeShort(GameMode m) => switch (m) {
         GameMode.classic => 'Classic',
         GameMode.survival => 'Survival',

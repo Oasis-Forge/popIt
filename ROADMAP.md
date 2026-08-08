@@ -263,22 +263,25 @@ P0 → P5 (signing SHA-1 + INTERNET). P1 → everything. P3 → P4 (rules need i
 
 ## Open items
 
-- **Play Console + GPGS** — real APP_ID in `games-ids.xml`, `games_services` package, OAuth SHA-1s, leaderboard/achievement IDs. Settings soft-gates until `GamesService.isConfigured`.
+- **Play Console (human)** — create listing from [`store/play_listing.txt`](store/play_listing.txt), Data safety from [`store/data_safety.txt`](store/data_safety.txt), follow [`store/SHIP_CHECKLIST.txt`](store/SHIP_CHECKLIST.txt). Privacy policy URL still required by Play.
+- **GPGS (next code pass)** — real APP_ID in `games-ids.xml`, `games_services` package, OAuth SHA-1s, restore APP_ID meta-data, set `GamesService.isConfigured`. Soft-gated for this ship.
 - **Firebase friends versus** — RTDB + anonymous auth; lobby friends CTA stays grayed until then.
 - **Licensed / authored music** — synth pack remains playable; broader appeal needs real tracks beyond `tools/gen_audio.dart`.
 - **iOS Game Center** — deferred; bundle id is ready.
 
 Local interest sprint (results PBs, combo juice, real Daily, mode HUD, coach, bot skill, chart craft, image share) is implemented offline-first.
 
+Ship packaging (label, minSdk 23, no debug release fallback, no fake GPGS APP_ID in manifest) is in place for an offline Android upload.
+
 ---
 
 ## Checklist
 
-- [ ] **P0** Unblock — release signing, INTERNET permission, bundle id, test net
-- [ ] **P1** Foundations — AppScope, persistence, chart registry, calibration
-- [ ] **P2** Runtime themes — VaultPalette ThemeExtension, 5 palettes
-- [ ] **P3** Difficulty, board scale, results-sheet extraction
-- [ ] **P4** Game modes — Classic, Survival, Precision, Endless Rush
-- [ ] **P5** Google Play Games Services — sign-in, leaderboards, achievements
-- [ ] **P6** Online realtime versus — RTDB rooms, room codes
-- [ ] **P7** Appeal and retention — daily challenge, streaks, unlocks, share card
+- [x] **P0** Unblock — release signing hook, INTERNET, bundle id, minSdk 23, store label (Play Console listing still human)
+- [x] **P1** Foundations — AppScope, persistence, chart registry, calibration
+- [x] **P2** Runtime themes — VaultPalette ThemeExtension, 5 palettes
+- [x] **P3** Difficulty, board scale, results-sheet extraction
+- [x] **P4** Game modes — Classic, Survival, Precision, Endless Rush
+- [ ] **P5** Google Play Games Services — sign-in, leaderboards, achievements (soft-gated stub)
+- [ ] **P6** Online realtime versus — RTDB rooms, room codes (bots live; friends gated)
+- [x] **P7** Appeal and retention — daily, streaks, unlocks, share card (offline)

@@ -1,0 +1,42 @@
+Android Play ship checklist (offline GPGS soft-gate)
+====================================================
+
+IN REPO (done for this pass)
+----------------------------
+[x] Launcher name "Pop It" (@string/app_name)
+[x] applicationId / namespace com.popit.popit
+[x] minSdk 23 pinned
+[x] Release build fails without android/key.properties (no debug fallback)
+[x] Fake GPGS APP_ID removed from AndroidManifest
+[x] Settings shows Play Games "Coming soon" while isConfigured == false
+[x] store/play_listing.txt + store/data_safety.txt drafts
+[x] android/key.properties.example template
+
+YOU MUST DO IN PLAY CONSOLE / ON MACHINE
+----------------------------------------
+[ ] Create app in Play Console (package com.popit.popit)
+[ ] Paste short/full description from store/play_listing.txt
+[ ] Complete Data safety from store/data_safety.txt
+[ ] Content rating questionnaire
+[ ] Upload phone screenshots (home, rhythm, results, daily)
+[ ] Feature graphic 1024x500
+[ ] Privacy policy URL (required by Play — host a short page)
+[ ] Confirm android/key.properties + upload keystore exist locally
+[ ] Build: flutter build appbundle --release
+      Output: build/app/outputs/bundle/release/app-release.aab
+[ ] Upload AAB to internal testing track first
+[ ] Print SHA-1 of upload / App Signing cert for a future GPGS pass:
+      keytool -list -v -keystore android/keystore/popit-release.jks
+
+DO NOT CLAIM IN THE LISTING
+---------------------------
+• Online leaderboards
+• Google Play Games sign-in
+• Online friends multiplayer
+
+NEXT CODE PASS (not this ship)
+------------------------------
+• Wire games_services + real APP_ID + GamesService.isConfigured = true
+• Restore APP_ID meta-data in AndroidManifest
+• Firebase friends versus
+• Licensed music pack

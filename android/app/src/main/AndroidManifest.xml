@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="pop_it"
+        android:label="@string/app_name"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -31,10 +31,8 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
-        <!-- GPGS placeholders — replace app_id after Play Console setup -->
-        <meta-data
-            android:name="com.google.android.gms.games.APP_ID"
-            android:value="@string/app_id" />
+        <!-- GPGS APP_ID meta-data intentionally omitted until Play Console
+             provides a real app_id. Re-add with @string/app_id after wiring. -->
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

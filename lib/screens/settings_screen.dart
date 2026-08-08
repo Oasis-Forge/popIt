@@ -196,7 +196,7 @@ class SettingsScreen extends StatelessWidget {
                       ListTile(
                         title: const Text('Coming soon'),
                         subtitle: Text(
-                          'Sign-in and leaderboards unlock after Play Console APP_ID is configured.',
+                          'Coming soon — this build is offline. Leaderboards arrive after Play Games setup.',
                           style: vaultLabel(
                             size: 11,
                             color: v.paper.withValues(alpha: 0.55),

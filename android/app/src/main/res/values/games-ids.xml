@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Placeholder GPGS IDs. Replace after Play Console configuration. -->
+<!--
+  Placeholder GPGS IDs for a future Play Games wiring pass.
+  Do NOT put a fake numeric APP_ID in AndroidManifest until configured —
+  the ship build omits com.google.android.gms.games.APP_ID meta-data.
+  After Play Console setup: replace values below, add games_services to
+  pubspec, set GamesService.isConfigured = true, and restore APP_ID meta-data.
+-->
 <resources>
-    <string name="app_id" translatable="false">000000000000</string>
+    <string name="app_id" translatable="false">REPLACE_WITH_PLAY_GAMES_APP_ID</string>
     <string name="package_name" translatable="false">com.popit.popit</string>
     <string name="leaderboard_classic_normal" translatable="false">lb_classic_normal</string>
     <string name="leaderboard_classic_hard" translatable="false">lb_classic_hard</string>

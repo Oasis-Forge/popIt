@@ -25,7 +25,8 @@ android {
 
     defaultConfig {
         applicationId = "com.popit.popit"
-        minSdk = flutter.minSdkVersion
+        // Play Games / modern devices; keep explicit for store clarity.
+        minSdk = 23
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -44,11 +45,16 @@ android {
 
     buildTypes {
         release {
-            signingConfig = if (keystorePropertiesFile.exists()) {
-                signingConfigs.getByName("release")
-            } else {
-                signingConfigs.getByName("debug")
+            // Never ship a debug-signed Play artifact by accident.
+            if (!keystorePropertiesFile.exists()) {
+                throw GradleException(
+                    "Missing android/key.properties. Copy key.properties.example, " +
+                        "point storeFile at your upload keystore, then rebuild.",
+                )
             }
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }

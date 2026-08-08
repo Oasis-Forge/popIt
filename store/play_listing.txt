@@ -1,0 +1,41 @@
+Pop It — Play Console listing draft
+===================================
+Package: com.popit.popit
+Version: 1.0.0 (2)
+
+SHORT DESCRIPTION (80 chars max)
+--------------------------------
+Rhythm pops on a disco board — classic, survival, daily, and local versus.
+
+FULL DESCRIPTION
+----------------
+Pop It is a rhythm game on a glowing fidget board. Cue lights flash to the beat — tap the right stone at the right time.
+
+PLAY
+• Rhythm modes: Classic, Survival, Precision, and Endless Rush
+• Difficulty from Easy to Expert
+• Daily challenge — one shared run per day
+• Versus bots (2–4 players) locally
+• Road to Glory survival climb
+
+PROGRESS
+• Grades, personal bests, and combo chains
+• Unlockable visual themes
+• Local day streak
+
+THIS RELEASE
+• Fully playable offline
+• Google Play Games sign-in and online leaderboards are coming in a later update
+• Online friends versus is coming later
+
+AUDIO
+• Original synth tracks included; more music planned
+
+CATEGORIES / TAGS
+Casual, Rhythm, Arcade
+
+CONTENT RATING
+Everyone / PEGI 3 — no violence, no ads in this build, no IAP in this build
+
+CONTACT
+Replace with your support email before publishing.

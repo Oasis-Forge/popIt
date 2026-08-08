@@ -1,7 +1,7 @@
 name: pop_it
 description: "Pop It — a rhythm game on a digital fidget board."
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.0+2
 
 environment:
   sdk: ^3.12.2

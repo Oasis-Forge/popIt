@@ -1,0 +1,40 @@
+Pop It — Play Console Data safety draft (v1.0.0+2)
+==================================================
+Ship posture: offline-first. Google Play Games is NOT configured yet.
+
+DATA COLLECTED
+--------------
+• None required to play.
+• Local on-device storage only (SharedPreferences): settings, scores,
+  streaks, theme unlocks, pending leaderboard queue for a future GPGS pass.
+• Share sheet (optional, user-initiated): exports a score image/text via
+  the system share UI. Pop It does not upload that image to our servers
+  (there are no Pop It servers in this build).
+
+DATA SHARED WITH THIRD PARTIES
+------------------------------
+• None in this build.
+• Google Play Games / Firebase are not enabled.
+• When GPGS is wired later: update this form for Play Games Services
+  (player ID, scores, achievements) per Google’s declarations.
+
+SECURITY PRACTICES
+------------------
+• Data encrypted in transit: N/A (no app backend).
+• Users can request deletion: clear app storage / uninstall.
+• Independent security review: no.
+
+SENSITIVE PERMISSIONS
+---------------------
+• INTERNET — present for Flutter/engine and a future online features pass;
+  core gameplay does not require a login or network account.
+
+ADS / IAP
+---------
+• No ads in this build.
+• No in-app purchases in this build.
+
+ACTION BEFORE SUBMIT
+--------------------
+1. Confirm declarations match the APK you upload.
+2. After enabling GPGS or Firebase, revise this file and the Console form.

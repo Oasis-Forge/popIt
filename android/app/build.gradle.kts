@@ -26,7 +26,8 @@ android {
     defaultConfig {
         applicationId = "com.popit.popit"
         // Play Games / modern devices; keep explicit for store clarity.
-        minSdk = 23
+        // Flutter stable default is currently 24 (>= Play / GPGS needs).
+        minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
